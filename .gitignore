@@ -1,0 +1,109 @@
+# Ignore Visual Studio temporary files, build results, and
+# user-specific files
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Ignore build output directories
+/bin/
+//obj/
+
+# Ignore NuGet packages
+*.nupkg
+*.snupkg
+packages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Ignore Rider/JetBrains IDE files
+.idea/
+*.sln.iml
+
+# Ignore ASP.NET temporary files
+*.log
+*.vspscc
+*.vssscc
+_TeamCity/
+
+# Ignore user secrets
+**/secrets.json
+**/appsettings.Development.json
+
+# Ignore publish output
+wwwroot/dist/
+wwwroot/node_modules/
+wwwroot/lib/
+
+# Ignore dependency manager directories
+node_modules/
+bower_components/
+
+# Ignore logs and database files
+*.log
+*.ldf
+*.mdf
+
+# Ignore Resharper files
+_ReSharper*/
+*.DotSettings.user
+
+# Ignore coverage and test result files
+coverage/
+TestResults/
+*.coverage
+*.coveragexml
+*.trx
+
+# Ignore temporary files
+*.tmp
+*.temp
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# NuGet Packages
+*.nupkg
+# NuGet Symbol Packages
+*.snupkg
+
+# Others
+~$*
+*~
+CodeCoverage/
+
+# MSBuild Binary and Structured Log
+*.binlog
+
+# MSTest test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# NUnit
+*.VisualState.xml
+TestResult.xml
+nunit-*.xml
