@@ -1,0 +1,109 @@
+# Ignore Visual Studio temporary files, build results, and
+# user-specific files
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio 2017/2019/2022 cache/options directory
+.vs/
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# NuGet Packages
+*.nupkg
+# NuGet Symbol Packages
+*.snupkg
+packages/
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Mono auto generated files
+mono_crash.*
+
+# Rider
+.idea/
+*.sln.iml
+
+# ASP.NET temporary files
+*.log
+*.vspscc
+*.vssscc
+_TeamCity/
+
+# User secrets
+**/secrets.json
+**/appsettings.Development.json
+
+# Publish output
+wwwroot/dist/
+wwwroot/node_modules/
+wwwroot/lib/
+
+# Dependency directories
+node_modules/
+bower_components/
+
+# Logs and databases
+*.log
+*.ldf
+*.mdf
+
+# ReSharper
+_ReSharper*/
+*.DotSettings.user
+
+# Test Results
+coverage/
+TestResults/
+*.coverage
+*.coveragexml
+*.trx
+
+# Temporary files
+*.tmp
+*.temp
+~$*
+*~
+CodeCoverage/
+
+# MSBuild Binary and Structured Log
+*.binlog
+
+# MSTest test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# NUnit
+*.VisualState.xml
+TestResult.xml
+nunit-*.xml

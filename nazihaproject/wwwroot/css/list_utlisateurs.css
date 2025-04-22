@@ -1,0 +1,44 @@
+﻿
+#excelButton {
+    background-color: forestgreen;
+    width: 70px;
+    padding: 6px;
+    color: #fff;
+    border: none;
+}
+.btns-telecharger{
+    margin-bottom:2rem;
+}
+.tableau-vente{
+    background-color:#fff;
+    border-radius:6px;
+}
+.list-utlisateur{
+    padding-top:4rem;
+}
+.add-btn >  form > button {
+    padding: 6px;
+    width: 400px;
+    border: none;
+    background-color: dodgerblue;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+}
+#btnvalider {
+    border: 0.5px solid #dee2e6;
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: .25rem;
+}
+.add-btn{
+    display:flex;
+    justify-content:center;
+    }
+
+.btn-delete > button {
+    background-color:red;
+    border:none;
+    border-radius:4px;
+}

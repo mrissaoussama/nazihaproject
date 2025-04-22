@@ -1,0 +1,122 @@
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model NazihaProject.ViewModels.UserListViewModel
+@{
+    ViewData["Title"] = "Gestion des utilisateurs";
+}
+
+<div class="container-fluid px-4">
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <i class="fa-solid fa-users me-1"></i> 
+                Liste des utilisateurs
+            </div>
+            <a asp-action="CreateUser" class="btn btn-primary btn-sm">
+                <i class="fa-solid fa-user-plus"></i> Nouvel utilisateur
+            </a>
+        </div>
+        <div class="card-body">
+            @if (Model.Users == null || !Model.Users.Any())
+            {
+                <div class="alert alert-info">
+                    Aucun utilisateur trouvé.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover" id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>Nom d'utilisateur</th>
+                                <th>Nom complet</th>
+                                <th>Email</th>
+                                <th>Rôle</th>
+                                <th>Statut</th>
+                                <th>Dernière connexion</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in Model.Users)
+                            {
+                                <tr>
+                                    <td>@user.Username</td>
+                                    <td>@user.FirstName @user.LastName</td>
+                                    <td>@user.Email</td>
+                                    <td>@user.Roles</td>
+                                    <td>
+                                        @if (user.IsActive)
+                                        {
+                                            <span class="badge bg-success">Actif</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Inactif</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @(user.LastLoginAt.HasValue ? user.LastLoginAt.Value.ToString("dd/MM/yyyy HH:mm") : "Jamais connecté")
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a asp-action="EditUser" asp-route-id="@user.Id" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-edit"></i> Modifier
+                                            </a>
+                                            <button type="button" class="btn btn-danger btn-sm" 
+                                                    onclick="confirmDelete(@user.Id, '@user.Username')">
+                                                <i class="fas fa-trash"></i> Supprimer
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">Confirmation de suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer l'utilisateur <strong id="userName"></strong>?</p>
+                <p class="text-danger">Cette action est irréversible.</p>
+            </div>
+            <div class="modal-footer">
+                <form asp-action="DeleteUser" method="post" id="deleteForm">
+                    <input type="hidden" id="userId" name="id" value="" />
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmDelete(id, name) {
+            document.getElementById('userId').value = id;
+            document.getElementById('userName').textContent = name;
+            
+            var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+            deleteModal.show();
+        }
+        
+        $(document).ready(function () {
+            $('#usersTable').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/fr-FR.json'
+                }
+            });
+        });
+    </script>
+}

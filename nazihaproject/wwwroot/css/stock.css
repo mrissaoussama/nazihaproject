@@ -1,0 +1,198 @@
+﻿body {
+}
+.perte-container{
+     
+    display:flex ;
+     flex-direction:column;
+     padding-top:4rem;
+     border-radius:8px;
+  
+}
+    .perte-container > form {
+        margin-top: 4rem;
+        background-color: #fff;
+        justify-content:space-between;
+        display:flex;
+        padding:4rem;
+      
+    }
+        .perte-container > form > button {
+            background-color: #63AEE5;
+            border: none;
+            color: #fff;
+            border-radius: 4px;
+            height:50px;
+            width:100px;
+        
+        }
+    .recherche > form{
+        display:flex;
+         gap:1rem;
+         align-items:center;
+
+    }
+    .recherche{
+        margin-top:3rem;
+    }
+.header-container{
+    padding-top:3rem;
+}
+.tableau-vente {
+    background-color: #fff;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-top: 3rem;
+}
+.btn-recherche > button {
+    margin-top: 26px;
+    padding: 6px;
+    width: 200px;
+    border: none;
+    background-color: dodgerblue;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+}
+#iccid {
+    width: 300px;
+    height: calc(2.25rem + 2px);
+    padding: 0.375rem 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+}
+.confirm-btn > button {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background-color: #63AEE5;
+    border: none;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 4px;
+}
+.confirm-btn {
+    display: flex;
+    justify-content: end;
+}
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+header-container > span {
+    display: flex;
+    gap: 4px;
+}
+body > div > div.content-wrapper > section > div > div.entrer-container > div > span{
+    width:300px !important;
+    height:100px !important;
+
+}
+.quantité{
+    display:flex;
+    flex-direction:column;
+
+}
+    .quantité > input{
+        width:200px;
+        display:flex;
+        justify-content:end;
+    }
+    .header-container > span > p {
+        font-size: 12px;
+        color: #A28DA2;
+    }
+.header-container > span {
+    display: flex;
+    gap: 4px;
+}
+.entrerstock-container, .affecterstock-container {
+    padding-top: 3rem;
+}
+.entrer-container {
+    background-color: #fff;
+    padding: 2rem;
+    margin-top: 4rem;
+    padding-top: 3rem;
+    background-color: #fff;
+    border-radius: 8px;
+}
+.user{
+    display:flex;
+    justify-content:space-between;
+    align-items:center
+}
+.Iccid-de, .Iccid-a{
+    display:flex;
+    flex-direction:column;
+
+}
+    .Iccid-de > input, .Iccid-a > input {
+        width: 300px;
+        height: calc(2.25rem + 2px);
+        padding: 0.375rem 0.75rem;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #495057;
+    }
+.quantité > input {
+    width: 300px;
+    height: calc(2.25rem + 2px);
+    padding: 0.375rem 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+}
+.art-quant{
+    display:flex;
+    justify-content:space-between;
+}
+.btn-telecharger > button {
+    background-color: #54BC46;
+    padding: 4px;
+    width: 120px;
+    border: 1px solid #ced4da;
+    border-radius: 6Px;
+}
+.success-message {
+    display:flex;
+    justify-content:center;
+    color:green;
+    font-size:24px;
+}
+.btn-telecharger {
+    margin-top: 32px;
+}
+.user{
+    margin-top:2rem;
+}
+.btns-supprimer > button {
+    padding: 4px 8px;
+     font-size:14px;
+    border: 1px solid #ced4da;
+    border-radius: 4Px;
+}
+.btns-supprimer {
+    margin-top:2rem;
+    display:flex;
+    gap:12px;
+}
+body > div > div.content-wrapper > section > div > div.entrer-container > div.art-quant > div.article > span > span.selection > span{
+    height:40px;
+}
+.error-message{
+    color:red;
+}
+.form-control{
+    width:300px !important;
+}

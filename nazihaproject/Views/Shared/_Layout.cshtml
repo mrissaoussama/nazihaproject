@@ -1,0 +1,527 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - MyProject</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/myProject.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.full.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+    <!-- DataTables JavaScript -->
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="~/plugins/fontawesome-free/css/all.min.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Ionicons -->
+    <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <!-- Tempusdominus Bootstrap 4 -->
+    <link rel="stylesheet" href="~/plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css">
+    <!-- iCheck -->
+    <link rel="stylesheet" href="~/plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+    <!-- JQVMap -->
+    <link rel="stylesheet" href="~/plugins/jqvmap/jqvmap.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="~/dist/css/adminlte.min.css">
+    <!-- overlayScrollbars -->
+    <link rel="stylesheet" href="~/plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
+    <!-- Daterange picker -->
+    <link rel="stylesheet" href="~/plugins/daterangepicker/daterangepicker.css">
+    <!-- summernote -->
+    <link rel="stylesheet" href="~/plugins/summernote/summernote-bs4.min.css">
+
+    <style>
+        .nav-treeview {
+            margin-left: 15px;
+        }
+        .nav-treeview .nav-link {
+            padding-left: 30px;
+        }
+    </style>
+
+    <script>
+        window.appInitialized = false;
+        
+        window.appLog = function(message) {
+            console.log('[App]', message);
+        }
+    </script>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+
+        <div class="preloader flex-column justify-content-center align-items-center">
+            <img class="animation__shake" src="~/dist/img/AdminLTELogo.png" alt="AdminLTELogo" height="60" width="60">
+        </div>
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+            </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a asp-controller="Home" asp-action="Index" class="nav-link">Home</a>
+                </li>
+
+        </ul>
+
+        <!-- Right navbar links -->
+        <ul class="navbar-nav ml-auto">
+            <!-- Navbar Search -->
+            <li class="nav-item">
+                <a class="nav-link" data-widget="navbar-search" href="#" role="button">
+                    <i class="fas fa-search"></i>
+                </a>
+                <div class="navbar-search-block">
+                    <form class="form-inline">
+                        <div class="input-group input-group-sm">
+                            <input class="form-control form-control-navbar" type="search" placeholder="Search" aria-label="Search">
+                            <div class="input-group-append">
+                                <button class="btn btn-navbar" type="submit">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                                <button class="btn btn-navbar" type="button" data-widget="navbar-search">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </li>
+
+            <!-- Messages Dropdown Menu -->
+            <li class="nav-item dropdown">
+                <a class="nav-link" data-toggle="dropdown" href="#">
+                    <i class="far fa-comments"></i>
+                    <span class="badge badge-danger navbar-badge">3</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+                    <a href="#" class="dropdown-item">
+                        <!-- Message Start -->
+                        <div class="media">
+                            <img src="dist/img/user1-128x128.jpg" alt="User Avatar" class="img-size-50 mr-3 img-circle">
+                            <div class="media-body">
+                                <h3 class="dropdown-item-title">
+                                    Brad Diesel
+                                    <span class="float-right text-sm text-danger"><i class="fas fa-star"></i></span>
+                                </h3>
+                                <p class="text-sm">Call me whenever you can...</p>
+                                <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> 4 Hours Ago</p>
+                            </div>
+                        </div>
+                        <!-- Message End -->
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item">
+                        <!-- Message Start -->
+                        <div class="media">
+                            <img src="dist/img/user8-128x128.jpg" alt="User Avatar" class="img-size-50 img-circle mr-3">
+                            <div class="media-body">
+                                <h3 class="dropdown-item-title">
+                                    John Pierce
+                                    <span class="float-right text-sm text-muted"><i class="fas fa-star"></i></span>
+                                </h3>
+                                <p class="text-sm">I got your message bro</p>
+                                <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> 4 Hours Ago</p>
+                            </div>
+                        </div>
+                        <!-- Message End -->
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item">
+                        <!-- Message Start -->
+                        <div class="media">
+                            <img src="dist/img/user3-128x128.jpg" alt="User Avatar" class="img-size-50 img-circle mr-3">
+                            <div class="media-body">
+                                <h3 class="dropdown-item-title">
+                                    Nora Silvester
+                                    <span class="float-right text-sm text-warning"><i class="fas fa-star"></i></span>
+                                </h3>
+                                <p class="text-sm">The subject goes here</p>
+                                <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> 4 Hours Ago</p>
+                            </div>
+                        </div>
+                        <!-- Message End -->
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item dropdown-footer">See All Messages</a>
+                </div>
+            </li>
+            <!-- Notifications Dropdown Menu -->
+            <li class="nav-item dropdown">
+                <a class="nav-link" data-toggle="dropdown" href="#">
+                    <i class="far fa-bell"></i>
+                    <span class="badge badge-warning navbar-badge">15</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+                    <span class="dropdown-item dropdown-header">15 Notifications</span>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-envelope mr-2"></i> 4 new messages
+                        <span class="float-right text-muted text-sm">3 mins</span>
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-users mr-2"></i> 8 friend requests
+                        <span class="float-right text-muted text-sm">12 hours</span>
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-file mr-2"></i> 3 new reports
+                        <span class="float-right text-muted text-sm">2 days</span>
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item dropdown-footer">See All Notifications</a>
+                </div>
+            </li>
+                @if (User.IsInRole(RoleType.Responsable.ToString()))
+                {
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="statisticsDropdown" role="button" data-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-chart-bar"></i> Statistiques
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="statisticsDropdown">
+                            @foreach (AnalysisType analysisType in Enum.GetValues(typeof(AnalysisType)))
+                            {
+                                <a class="dropdown-item" href="@Url.Action("AnalysisStatistics", "Prelivage", new { type = analysisType })">
+                                    @HumanizeString(analysisType.ToString())
+                                </a>
+                            }
+                        </div>
+                    </li>
+                }
+
+                @functions {
+                    private string HumanizeString(string input)
+                    {
+                        if (string.IsNullOrEmpty(input)) return input;
+                        var replaced = input.Replace("_", " ");
+                        replaced = System.Text.RegularExpressions.Regex.Replace(replaced, "([a-z])([A-Z])", "$1 $2");
+                        var words = replaced.Split(' ');
+                        for (int i = 0; i < words.Length; i++)
+                        {
+                            if (words[i].Length > 1)
+                                words[i] = char.ToUpper(words[i][0]) + words[i].Substring(1).ToLower();
+                            else
+                                words[i] = words[i].ToUpper();
+                        }
+                        return string.Join(" ", words);
+                    }
+                }
+                <li class="nav-item">
+                    <form id="logoutForm" action="@Url.Action("Logout", "Account")" method="post" style="display:none;">
+                        @Html.AntiForgeryToken()
+                    </form>
+                    <a class="nav-link" href="javascript:document.getElementById('logoutForm').submit();" role="button">
+                        <i class='bx bx-log-out'></i> Déconnexion
+                    </a>
+                </li>
+        </ul>
+    </nav>
+    <!-- /.navbar -->
+
+    <!-- Main Sidebar Container -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <!-- Brand Logo -->
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Sidebar user panel (optional) -->
+            <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                <div class="info">
+                    <a href="#" class="d-block"></a>
+                </div>
+            </div>
+            <!-- SidebarSearch Form -->
+            <!-- Sidebar Menu -->
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                    <li class="nav-item menu-open">
+                        <a href="#" class="nav-link">
+                            <i class='bx bx-user'></i>
+                            <p>
+                                Utilisateurs
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
+                        </a>
+                        @if (User.IsInRole(RoleType.Responsable.ToString()))
+                        {
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a asp-controller="Utilisateur" asp-action="UserList" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Liste des Utilisateurs</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        }
+                    </li>
+                    <li class="nav-item menu-open">
+                        <a href="#" class="nav-link">
+                            <i class='bx bxs-store'></i>
+                            <p>
+                                Stock
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                    <a asp-controller="Stock" asp-action="Stock_Page" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Consulter Stock</p>
+                                    </a>
+                            </li>
+                        </ul>
+                    </li>
+                @if (User.IsInRole(RoleType.TechnicienPosteEau.ToString()))
+        {
+                    <li class="nav-item menu-open">
+                        <a href="#" class="nav-link">
+                            <i class="nav-icon fas fa-tachometer-alt"></i>
+                            <p>
+                                prélivage Eau
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Prelivage" asp-action="Liqueursucree_Page">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>liqueur sucréé</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Prelivage" asp-action="Eauchaudure_Page">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Eau de la chaudures</p>
+                                </a>
+                            </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-controller="Prelivage" asp-action="JetRaffine1_Page">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Jet Raffine 1</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-controller="Prelivage" asp-action="JetRaffine2_Page">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Jet Raffine 2</p>
+                                        </a>
+                                    </li>
+                        </ul>
+                    </li>}
+                @if (User.IsInRole(RoleType.TechnicienPosteColoration.ToString()))
+        {
+                    <li class="nav-item menu-open">
+                        <a href="#" class="nav-link">
+                            <i class="nav-icon fas fa-tachometer-alt"></i>
+                            <p>
+                                Coloration
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Prelivage" asp-action="Poste_Decoloration_Refonte_Page">
+                                    <i class="nav-icon fas fa-tachometer-alt"></i>
+                                    <p>Refonte</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Prelivage" asp-action="Poste_Decoloration_Egouts_Page">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Egouts</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Prelivage" asp-action="Poste_Decoloration_JetC_Page">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Jet C</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                        <a class="nav-link" asp-controller="Prelivage" asp-action="SucreBlancCristalisee_Page">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>sucre blanc cristalisé</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>}
+                @if (User.IsInRole(RoleType.TechnicienPostePurete.ToString()))
+                    {
+                        <li class="nav-item menu-open">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>
+                                    Pureté
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-controller="Prelivage" asp-action="Poste_Purete_Sirops_Page">
+                                        <i class="nav-icon fas fa-tachometer-alt"></i>
+                                        <p>Refonte</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Prelivage" asp-action="Poste_Purete_Egouts_Page">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Egouts</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Prelivage" asp-action="Poste_Purete_JetC_Page">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Jet C</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    }
+                        <li class="nav-item menu-open">
+                            <a href="#" class="nav-link">
+                                <i class='bx bxs-store'></i>
+                                <p>
+                                    Stock
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a asp-controller="Stock" asp-action="Stock_Page" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Consulter Stock</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Stock" asp-action="Perte_stock" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Pertes</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Stock" asp-action="EntrerStock" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Entrer Stock</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Stock" asp-action="AffecterStock" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Affecter Stock</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="#" class="nav-link">
+                                        <i class="nav-icon fas fa-boxes"></i>
+                                        <p>
+                                            Etat stock
+                                            <i class="right fas fa-angle-left"></i>
+                                        </p>
+                                    </a>
+                                    <ul class="nav nav-treeview">
+                                        <li class="nav-item">
+                                            <a asp-controller="Stock" asp-action="EtatStock" class="nav-link">
+                                                <i class="far fa-circle nav-icon"></i>
+                                                <p>Etat Stock terrien</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a asp-controller="Stock" asp-action="Etat_Stock_saisie" class="nav-link">
+                                                <i class="far fa-circle nav-icon"></i>
+                                                <p>Etat saisie</p>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                </ul>
+            </nav>
+            <!-- /.sidebar-menu -->
+        </div>
+        <!-- /.sidebar -->
+    </aside>
+
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        @RenderBody()
+        <!-- /.content  -->
+    </div>
+    <!-- /.content-wrapper -->
+    <!-- Control Sidebar -->
+    <aside class="control-sidebar control-sidebar-dark">
+        <!-- Control sidebar content goes here -->
+    </aside>
+    <!-- /.control-sidebar -->
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.full.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<!-- Bootstrap and other plugins -->
+<script src="~/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="~/plugins/moment/moment.min.js"></script>
+<script src="~/plugins/daterangepicker/daterangepicker.js"></script>
+<script src="~/plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js"></script>
+<script src="~/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
+<script src="~/dist/js/adminlte.js"></script>
+<!-- App Specific Scripts - load these last -->
+<script src="~/js/site.js"></script>
+<script>
+    window.initializeApp = function() {
+        appLog('Initializing app...');
+        
+        if ($('#analysisDate, #analysisHour').length > 0) {
+            appLog('Initializing date/hour fields');
+            const now = new Date();
+            
+            if ($('#analysisHour').length > 0) {
+                $('#analysisHour').val(now.getHours());
+                appLog('Set hour to: ' + now.getHours());
+            }
+            
+            if ($('#analysisDate').length > 0) {
+                $('#analysisDate').val(now.toISOString().split('T')[0]);
+                appLog('Set date to: ' + now.toISOString().split('T')[0]);
+            }
+        }
+        
+        if ($.fn.DataTable && $('.dataTable').length > 0) {
+            appLog('Initializing DataTables');
+            $('.dataTable').DataTable();
+        }
+        
+        window.appInitialized = true;
+        appLog('App initialization complete');
+    };
+    
+    $(document).ready(function() {
+        appLog('Document ready event fired');
+        window.initializeApp();
+    });
+</script>
+@await RenderSectionAsync("Scripts", required: false)
+
+<script src="~/plugins/chart.js/Chart.min.js"></script>
+<!-- Sparkline -->
+<script src="~/plugins/sparklines/sparkline.js"></script>
+<!-- JQVMap -->
+<script src="~/plugins/jqvmap/jquery.vmap.min.js"></script>
+<script src="~/plugins/jqvmap/maps/jquery.vmap.usa.js"></script>
+<!-- jQuery Knob Chart -->
+<script src="~/plugins/jquery-knob/jquery.knob.min.js"></script>
+<!-- Summernote -->
+<script src="~/plugins/summernote/summernote-bs4.min.js"></script>
+@RenderSection("SuccessMessage", required: false)
+</body>
+</html>

@@ -1,0 +1,171 @@
+﻿.header{
+    padding-top:2rem;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+.recherhe-container > form{
+    padding-top:4rem;
+    align-items:center;
+    display:flex;
+    gap:16px;
+    justify-content:end;
+}
+body > div > div.content-wrapper > section > div > div.vente-details-informations > div > div > div{
+    margin-top:4rem;
+}
+.recherche-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4rem;
+}
+.input-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10Px;
+}
+#userTable > tbody > tr:nth-child(1) > td.btns {
+    display: flex;
+    gap: 4px;
+}
+body > div > div.content-wrapper > section > div > div.recherhe-container {
+    margin-top:3rem;
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:4rem;
+}
+.header > span:nth-child(1) {
+    font-size: 32px;
+}
+#example3_wrapper > div.dt-buttons > button{
+    display:none;
+}
+.header > span:nth-child(2) {
+    font-size: 16px;
+    color: gray;
+}
+    .input-container > input {
+        width:300px;
+        height: calc(2.25rem + 2px);
+        padding: 0.375rem 0.75rem;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #495057;
+    }
+    .btn-recherche {
+        margin-top:40px;
+    }
+.btn-recherche > button {
+    padding: 6px;
+    width: 300px;
+    border: none;
+    background-color: dodgerblue;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+}
+#btnvalider {
+    border: 0.5px solid #dee2e6;
+    width: 48px;
+}
+.button-details {
+    width: 48PX;
+}
+.tableau-vente{
+    margin-top:4rem;
+}
+#example3 > thead > tr > th:nth-child(4){
+    width:50px;
+}
+#example3 > tbody:nth-child(2) > tr > td:nth-child(4){
+    width:50px;
+}
+.pic-container {
+  
+    margin:0 auto;
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    padding: 8px;
+}
+    .pic-container > button {
+        margin-bottom: 8px;
+        border: none;
+        border-radius: 8px;
+    }
+    .pic-container > img {
+        margin-top: 8px;
+        margin-bottom: 16px;
+        width: 50%;
+        margin: 0 auto;
+        height: 400px;
+    }
+.edit-buttons {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+}
+    .edit-buttons > button {
+        width: 100%;
+        background-color: #dee2e6;
+        border: none;
+        border-radius: 8px;
+    }
+    .pointage_details_container{
+        padding-top:4rem;
+        display:flex;
+        flex-direction:column;
+        gap:3rem;
+    }
+.pic-container > img {
+    margin-top: 8px;
+    margin-bottom: 16px;
+    width: 50%;
+    margin: 0 auto;
+    height: 400px;
+}
+.map-vente {
+    padding: 8px;
+    margin-top: 2rem !important;
+    margin-bottom: 3rem;
+    width: 50%;
+    margin: 0 auto;
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    padding-bottom:4rem;
+}
+    .map-vente > h1 {
+        display: flex;
+        justify-content: center;
+    }
+.btns-telecharger {
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:2rem;
+
+}
+.excel-btn > button {
+    background-color: forestgreen;
+    width: 70px;
+    padding: 6px;
+    color: #fff;
+    border: none;
+}
+.pdf-btn > button {
+    padding: 6px;
+    width: 300px;
+    border: none;
+    background-color: rgb(149,40,27);
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+}
+.card-body{
+    background-color:#fff;
+    border-radius:12px;
+}

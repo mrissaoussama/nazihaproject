@@ -1,0 +1,53 @@
+﻿@model List<NazihaProject.Models.Stock>
+
+<h2>Liste des Articles dans le Stock</h2>
+<a href="@Url.Action("AjouterArticle")" class="btn btn-success">Ajouter un Article</a>
+
+<table id="stockTable" class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Quantité</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var article in Model)
+        {
+            <tr>
+                <td>@article.Nom</td>
+                <td>@article.Quantity</td>
+                <td>
+                    <button onclick="modifierQuantite(@article.Id)" class="btn btn-warning">Modifier</button>
+                    <button onclick="supprimerArticle(@article.Id)" class="btn btn-danger">Supprimer</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#stockTable').DataTable();
+    });
+
+    // JavaScript to modify quantity of an article
+    function modifierQuantite(id) {
+        var quantity = prompt("Entrez la nouvelle quantité:");
+        if (quantity) {
+            $.post("/Stock/ModifierArticle", { id: id, quantity: quantity }, function (response) {
+                if (response.success) location.reload();
+            });
+        }
+    }
+
+    // JavaScript to delete an article from stock
+    function supprimerArticle(id) {
+        if (confirm("Êtes-vous sûr de vouloir supprimer cet article?")) {
+            $.post("/Stock/SupprimerArticle", { id: id }, function (response) {
+                if (response.success) location.reload();
+            });
+        }
+    }
+</script>

@@ -1,0 +1,278 @@
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+@functions {
+    private string HumanizeString(string input)
+    {
+        if (string.IsNullOrEmpty(input)) return input;
+        var replaced = input.Replace("_", " ");
+        replaced = System.Text.RegularExpressions.Regex.Replace(replaced, "([a-z])([A-Z])", "$1 $2");
+        var words = replaced.Split(' ');
+        for (int i = 0; i < words.Length; i++)
+        {
+            if (words[i].Length > 1)
+                words[i] = char.ToUpper(words[i][0]) + words[i].Substring(1).ToLower();
+            else
+                words[i] = words[i].ToUpper();
+        }
+        return string.Join(" ", words);
+    }
+}
+
+<link rel="stylesheet" href="~/css/water_liquor.css" asp-append-version="true" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+<style>
+    .field-validation-error {
+        color: #dc3545;
+        font-size: 0.875rem;
+    }
+    .input-validation-error {
+        border-color: #dc3545;
+    }
+    .analysis-message {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+    }
+    .analysis-message.success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    .analysis-message.error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .loading-spinner {
+        text-align: center;
+        color: white;
+    }
+    
+    .loading-spinner i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+</style>
+
+<div class="water-liquor-analysis">
+    <h1>@HumanizeString(Model.Title)</h1>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="analysis-message success">
+            <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+    
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="analysis-message error">
+            <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Vérification des données...</p>
+        </div>
+    </div>
+
+    <form method="post" action="@Url.Action("SaveAnalysis", "Prelivage")" id="analysisForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="ReturnUrl" value="@Context.Request.Path" />
+        <div class="analysis-controls">
+            <div class="form-group">
+                <label for="analysisType">Type:</label>
+                <select id="analysisType" name="AnalysisType" class="form-control" required>
+                    <option value="@((int)Model.AnalysisType)">@Model.Title</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="shift">Poste:</label>
+                <select id="shift" name="Shift" class="form-control" required>
+                    <option value="Morning">Matin</option>
+                    <option value="Evening">Soir</option>
+                    <option value="Night">Nuit</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="analysisDate">Date:</label>
+                <input type="date" id="analysisDate" name="Date" class="form-control" required />
+            </div>
+
+            <div class="hour-selector">
+                <label for="analysisHour">Heure:</label>
+                <select id="analysisHour" name="Hour" required>
+                    @for (int hour = 0; hour < 24; hour++)
+                    {
+                        <option value="@hour">@hour:00</option>
+                    }
+                </select>
+            </div>
+
+            <button type="submit" class="btn-save">Enregistrer</button>
+
+            @if (!string.IsNullOrEmpty(Model.HistoricalDataUrl))
+            {
+                <div>
+                    <a href="@Model.HistoricalDataUrl" class="btn btn-secondary">
+                        Voir l'historique
+                    </a>
+                    <a href="@Url.Action("AnalysisStatistics", "Prelivage", new { type = Model.AnalysisType })" class="btn btn-info">
+                        <i class="fas fa-chart-bar"></i> Voir les statistiques
+                    </a>
+                </div>
+            }
+        </div>
+        
+        <div id="validation-summary" class="text-danger"></div>
+        
+        <div class="analysis-grid">
+            @{
+                int i = 0;
+                foreach (var table in Model.Tables)
+                {
+                    <div class="analysis-table-container" data-category="@table.Category">
+                        <h2>@(++i). @table.Title</h2>
+                        <input type="hidden" name="HourlyData[@(i-1)].Hour" value="" class="hour-value" />
+                        <input type="hidden" name="HourlyData[@(i-1)].Category" value="@table.Category" />
+                        <table class="analysis-table">
+                            <thead>
+                            <tr>
+                                <th>Paramètre</th>
+                                <th>Valeur</th>
+                                <th>Unité</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @for (int j = 0; j < table.Parameters.Count; j++)
+                            {
+                                var param = table.Parameters[j];
+                                <tr>
+                                    <td>@param.Name</td>
+                                    <td>
+                                        <input type="number" step="0.01" value="0.00" class="parameter-input" 
+                                            name="HourlyData[@(i-1)].Parameters[@param.Name].Value" required />
+                                        <input type="hidden" 
+                                            name="HourlyData[@(i-1)].Parameters[@param.Name].Unit" value="@param.Unit" />
+                                    </td>
+                                    <td>@param.Unit</td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            }
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        // Initialize the form
+        $(document).ready(function() {
+            $('#loadingOverlay').hide();
+            $('.preloader').fadeOut();
+            
+            // Set current date and hour
+            const now = new Date();
+
+            if ($('#analysisHour').length > 0) {
+                $('#analysisHour').val(now.getHours());
+                $('.hour-value').val(now.getHours());
+            }
+
+            if ($('#analysisDate').length > 0) {
+                $('#analysisDate').val(now.toISOString().split('T')[0]);
+            }
+
+            $('#analysisHour').change(function() {
+                const selectedHour = $(this).val();
+                $('.hour-value').val(selectedHour);
+            });
+
+            $('#analysisForm').on('submit', function(e) {
+                const $form = $(this);
+                
+                let isValid = true;
+                $form.find('[required]').each(function() {
+                    if (!$(this).val()) {
+                        isValid = false;
+                        $(this).addClass('input-validation-error');
+                    } else {
+                        $(this).removeClass('input-validation-error');
+                    }
+                });
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    $('#validation-summary').html('<div class="alert alert-danger">Veuillez remplir tous les champs obligatoires.</div>');
+                    return false;
+                }
+                
+                const categories = [];
+                let hasDuplicates = false;
+                
+                $('.analysis-table-container').each(function() {
+                    const category = $(this).data('category');
+                    if (categories.includes(category)) {
+                        hasDuplicates = true;
+                        $(this).addClass('input-validation-error');
+                    } else {
+                        categories.push(category);
+                        $(this).removeClass('input-validation-error');
+                    }
+                });
+                
+                if (hasDuplicates) {
+                    e.preventDefault();
+                    $('#validation-summary').html('<div class="alert alert-danger">Erreur: Des catégories en double ont été détectées dans le formulaire.</div>');
+                    return false;
+                }
+                
+                $('#validation-summary').html('');
+                $('#loadingOverlay').css('display', 'flex');
+                
+                setTimeout(function() {
+                    $('#loadingOverlay').fadeOut();
+                }, 10000);
+                
+            });
+            
+            setTimeout(function() {
+                $('.analysis-message').fadeOut('slow');
+            }, 5000);
+        });
+        
+        $(window).on('pageshow', function() {
+            $('#loadingOverlay').hide();
+            $('.preloader').fadeOut();
+        });
+        
+        $(window).on('pagehide', function() {
+            $('#loadingOverlay').hide();
+        });
+    </script>
+}

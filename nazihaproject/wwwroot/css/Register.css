@@ -1,0 +1,172 @@
+﻿body {
+}
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .header-container > span {
+        display: flex;
+        gap: 4px;
+    }
+
+        .header-container > span > p {
+            font-size: 12px;
+            color: #A28DA2;
+        }
+
+.confirm-btn {
+    display: flex;
+    justify-content: end;
+}
+.pics > .input > img {
+    width:250px;
+    height:150px;
+}
+.face-container{
+    width:50%;
+    margin: 40px auto;
+}
+
+.confirm-btn > button {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background-color: #63AEE5;
+    border: none;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 4px;
+}
+
+        .confirm-btn > button > i {
+            margin: 0 auto;
+        }
+
+.input > input, textarea, select {
+    width: 300px;
+    height: calc(3.25rem + 2px);
+    padding: 0.375rem 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+    width: 100%;
+}
+$delete-red: red;
+
+
+
+
+
+
+
+
+
+.utlisateurs-inforamtions {
+    display: flex;
+    justify-content: space-between;
+}
+.btns-actions {
+    display: flex;
+    flex-direction: column;
+    gap:1rem;
+}
+.btn-delete,.btn-update{
+    display:flex;
+    justify-content:center;
+}
+    .btn-update > button , .btn-delete > button  {
+        border:none;
+        width:100Px;
+        display:flex;
+        justify-content:center;
+    }
+    .btn-delete > button {
+        background-color:red;
+    }
+    .left-container {
+        display: flex;
+        flex-direction: column;
+    }
+    .left-container > h2 {
+        color: green;
+        font-size: 24px;
+        font-weight: bold;
+    }
+.utlisateurs-inforamtions{
+    padding-top:4rem;
+}
+.pic-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    padding: 8px;
+}
+    .pic-container > button {
+        margin-bottom: 8px;
+        border: none;
+        border-radius: 8px;
+    }
+    .pic-container > img {
+        margin-top: 8px;
+        margin-bottom: 16px;
+        width: 50%;
+        margin: 0 auto;
+        height: 400px;
+    }
+.cin-picture-container {
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+}
+.edit-buttons {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+}
+    .edit-buttons > button {
+        width: 100%;
+        background-color: #dee2e6;
+        border: none;
+        border-radius: 8px;
+    }
+.informations {
+    gap: 40px;
+    display: grid;
+    grid-template-columns: auto auto auto;
+}
+.form-container {
+    margin-top: 4rem;
+    padding-top: 3rem;
+    background-color: #fff;
+    border-radius: 8px;
+}
+.form-container > form {
+    padding:12px;
+}
+.input{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+    .input > labell {
+        margin-bottom: 12px;
+        color: gray;
+    }
+    .pics {
+        display:flex;
+        flex-direction:column;
+        gap: 1rem;
+    }
+    .pics > .input > input{
+        border:none;
+    }
+.register-container{
+    padding-top:3rem;
+}

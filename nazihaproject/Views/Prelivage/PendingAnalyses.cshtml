@@ -1,0 +1,213 @@
+@model NazihaProject.ViewModels.PendingAnalysisViewModel
+@{
+    ViewData["Title"] = "Analyses en attente d'approbation";
+}
+
+<div class="container-fluid px-4 mt-4">
+    <h1 class="mb-4">Analyses en attente d'approbation</h1>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong><i class="fas fa-check-circle"></i></strong> @TempData["SuccessMessage"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong><i class="fas fa-exclamation-circle"></i></strong> @TempData["ErrorMessage"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-clock me-1"></i> Total: @Model.TotalPending analyses en attente
+                        </div>
+                        @if (Model.TotalPending > 0)
+                        {
+                            <button id="bulkApproveBtn" class="btn btn-success">
+                                <i class="fas fa-check"></i> Approuver en masse
+                            </button>
+                        }
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (!Model.PendingAnalyses.Any())
+                    {
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> Aucune analyse en attente d'approbation.
+                        </div>
+                    }
+                    else
+                    {
+                        <form id="bulkApproveForm" method="post" asp-action="BulkApproveAnalyses">
+                            @Html.AntiForgeryToken()
+                            <table class="table table-striped table-bordered dataTable">
+                                <thead class="table-primary">
+                                    <tr>
+                                        <th width="40">
+                                            <input type="checkbox" id="selectAll" />
+                                        </th>
+                                        <th>Type</th>
+                                        <th>Date</th>
+                                        <th>Heure(s)</th>
+                                        <th>Poste</th>
+                                        <th width="150">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var analysis in Model.PendingAnalyses)
+                                    {
+                                        <tr>
+                                            <td class="text-center">
+                                                <input type="checkbox" name="recordIds" value="@analysis.Id" class="record-checkbox" />
+                                            </td>
+                                            <td>@analysis.AnalysisType</td>
+                                            <td>@analysis.AnalysisDate.ToShortDateString()</td>
+                                            <td>
+                                                @string.Join(", ", analysis.Data.Select(d => $"{d.Hour}h00"))
+                                            </td>
+                                            <td>@analysis.Shift</td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a asp-action="AnalysisResults" asp-route-type="@analysis.AnalysisType" asp-route-date="@analysis.AnalysisDate.ToString("yyyy-MM-dd")" class="btn btn-info" title="Voir">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-success approve-btn" data-id="@analysis.Id" title="Approuver">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-danger reject-btn" data-id="@analysis.Id" title="Rejeter">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Approve Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="approveModalLabel">Approuver l'analyse</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="approveForm" method="post" asp-action="ApproveAnalysis">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="approveId" name="id" />
+                <div class="modal-body">
+                    <p>Êtes-vous sûr de vouloir approuver cette analyse?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">Approuver</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="rejectModalLabel">Rejeter l'analyse</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="rejectForm" method="post" asp-action="RejectAnalysis">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="rejectId" name="id" />
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="reason">Motif de rejet:</label>
+                        <textarea class="form-control" id="reason" name="reason" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-danger">Rejeter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable
+    if (!$.fn.DataTable.isDataTable('.dataTable')) {
+        $('.dataTable').DataTable({
+            "order": [[2, "desc"]],
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json"
+            }
+        });
+    }
+            // Select all checkboxes
+            $('#selectAll').click(function() {
+                $('.record-checkbox').prop('checked', this.checked);
+            });
+
+            // Check if all checkboxes are selected
+            $('.record-checkbox').on('click', function() {
+                if($('.record-checkbox:checked').length == $('.record-checkbox').length) {
+                    $('#selectAll').prop('checked', true);
+                } else {
+                    $('#selectAll').prop('checked', false);
+                }
+            });
+
+            // Bulk approve button
+            $('#bulkApproveBtn').click(function() {
+                if($('.record-checkbox:checked').length === 0) {
+                    alert('Veuillez sélectionner au moins une analyse à approuver.');
+                    return false;
+                }
+
+                if(confirm('Êtes-vous sûr de vouloir approuver toutes les analyses sélectionnées?')) {
+                    $('#bulkApproveForm').submit();
+                }
+            });
+
+            // Approve button click
+            $('.approve-btn').click(function() {
+                var id = $(this).data('id');
+                $('#approveId').val(id);
+                $('#approveModal').modal('show');
+            });
+
+            // Reject button click
+            $('.reject-btn').click(function() {
+                var id = $(this).data('id');
+                $('#rejectId').val(id);
+                $('#rejectModal').modal('show');
+            });
+        });
+    </script>
+}

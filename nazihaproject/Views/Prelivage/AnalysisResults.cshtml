@@ -1,0 +1,397 @@
+@model List<NazihaProject.ViewModels.AnalysisResultViewModel>
+@using NazihaProject.Models
+@{
+    ViewData["Title"] = "Résultats d'analyse";
+    var isAdmin = ViewBag.IsAdmin != null && ViewBag.IsAdmin;
+}
+
+@functions {
+    private string HumanizeString(string input) {
+        if (string.IsNullOrEmpty(input)) return input;
+        var replaced = input.Replace("_", " ");
+        replaced = System.Text.RegularExpressions.Regex.Replace(replaced, "([a-z])([A-Z])", "$1 $2");
+        var words = replaced.Split(' ');
+        for (int i = 0; i < words.Length; i++) {
+            if (words[i].Length > 1)
+                words[i] = char.ToUpper(words[i][0]) + words[i].Substring(1).ToLower();
+            else
+                words[i] = words[i].ToUpper();
+        }
+        return string.Join(" ", words);
+    }
+}
+
+<link rel="stylesheet" href="~/css/analysis-results.css" />
+
+<div class="container-fluid px-4 mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="mb-4">Résultats d'analyse</h1>
+        <select id="analysisTypeDropdown" class="form-select" style="max-width: 250px;">
+            <option value="">Tous les types</option>
+            @foreach (AnalysisType analysisType in Enum.GetValues(typeof(AnalysisType)))
+            {
+                if ((AnalysisType)ViewBag.AnalysisType == analysisType)
+                {
+                    <option value="@analysisType" selected>@HumanizeString(analysisType.ToString())</option>
+                }
+                else
+                {
+                    <option value="@analysisType">@HumanizeString(analysisType.ToString())</option>
+                }
+            }
+        </select>
+    </div>
+    <h1 class="mb-4">Résultats d'analyse: @ViewBag.AnalysisType</h1>
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong><i class="fas fa-check-circle"></i></strong> @TempData["SuccessMessage"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null || ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong><i class="fas fa-exclamation-circle"></i></strong> @(TempData["ErrorMessage"] ?? ViewBag.ErrorMessage)
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+        <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-filter me-1"></i> Filtres
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <input type="hidden" name="type" value="@ViewBag.AnalysisType" />
+                
+                <div class="col-md-3">
+                    <label for="date" class="form-label">Date</label>
+                    <input type="date" id="date" name="date" class="form-control" value="@ViewBag.DateFilter" />
+                </div>
+                <div class="col-md-2">
+                    <label for="hour" class="form-label">Heure</label>
+                    <select id="hour" name="hour" class="form-control">
+                        <option value="">Toutes les heures</option>
+                        @for (int i = 0; i < 24; i++)
+                        {
+                            if (ViewBag.HourFilter != null && ViewBag.HourFilter == i)
+                            {
+                                <option value="@i" selected>@i:00</option>
+                            }
+                            else
+                            {
+                                <option value="@i">@i:00</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                @if (isAdmin)
+                {
+                    <div class="col-md-3">
+                        <label for="status" class="form-label">Statut</label>
+                        <select id="status" name="status" class="form-control">
+                            <option value="">Tous les statuts</option>
+
+                            @if (ViewBag.StatusFilter == ApprovalStatus.Pending)
+                            {
+                                <option value="@((int)ApprovalStatus.Pending)" selected>En attente</option>
+                            }
+                            else
+                            {
+                                <option value="@((int)ApprovalStatus.Pending)">En attente</option>
+                            }
+
+                            @if (ViewBag.StatusFilter == ApprovalStatus.Approved)
+                            {
+                                <option value="@((int)ApprovalStatus.Approved)" selected>Approuvé</option>
+                            }
+                            else
+                            {
+                                <option value="@((int)ApprovalStatus.Approved)">Approuvé</option>
+                            }
+
+                            @if (ViewBag.StatusFilter == ApprovalStatus.Rejected)
+                            {
+                                <option value="@((int)ApprovalStatus.Rejected)" selected>Rejeté</option>
+                            }
+                            else
+                            {
+                                <option value="@((int)ApprovalStatus.Rejected)">Rejeté</option>
+                            }
+                        </select>
+                    </div>
+                }
+                
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-search"></i> Filtrer
+                    </button>
+                    <a href="@Url.Action("AnalysisStatistics", "Prelivage", new { type = ViewBag.AnalysisType })" class="btn btn-info me-2">
+                        <i class="fas fa-chart-bar"></i> Statistiques
+                    </a>
+                    @{
+                        // Fix the Url.Action call by using a proper method to get the action name
+                        string actionName = "Index";
+                        if (ViewBag.AnalysisType != null)
+                        {
+                            var analysisType = (AnalysisType)ViewBag.AnalysisType;
+                            actionName = analysisType switch
+                            {
+                                AnalysisType.EauDeRetour => "EauDeRetour_Page",
+                                AnalysisType.ChaudiereFME => "Eauchaudure_Page",
+                                AnalysisType.LiquersSucree => "Liqueursucree_Page",
+                                AnalysisType.ColorationEgouts => "Poste_Decoloration_Egouts_Page",
+                                AnalysisType.ColorationRefonte => "Poste_Decoloration_Refonte_Page",
+                                AnalysisType.SucreBlancCristalisee => "SucreBlancCristalisee_Page",
+                                AnalysisType.SucreEnSachoge => "SucreEnSachoge_Page",
+                                AnalysisType.ColorationJetC => "Poste_Decoloration_JetC_Page",
+                                AnalysisType.Sirops => "Poste_Purete_Sirops_Page",
+                                AnalysisType.PureteEgouts => "Poste_Purete_Egouts_Page",
+                                AnalysisType.PureteJetC => "Poste_Purete_JetC_Page",
+                                AnalysisType.JetRaffine1 => "JetRaffine1_Page",
+                                AnalysisType.JetRaffine2 => "JetRaffine2_Page",
+                                _ => "Index"
+                            };
+                        }
+                    }
+                    <a href="@Url.Action(actionName, "Prelivage")" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Nouvelle analyse
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-table me-1"></i> Résultats
+                </div>
+                <div>
+                    <span class="badge bg-primary">Total: @Model.Count</span>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (!Model.Any())
+            {
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Aucun résultat ne correspond à vos critères de recherche.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered" id="analysisResultsTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Poste</th>
+                                <th>Heure(s)</th>
+                                <th>Catégories</th>
+                                @if (isAdmin)
+                                {
+                                    <th>Statut</th>
+                                }
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.AnalysisDate.ToString("dd/MM/yyyy")</td>
+                                    <td>@item.Shift</td>
+                                    <td>@string.Join(", ", item.Data.Select(d => $"{d.Hour}:00"))</td>
+                                    <td>
+                                        @string.Join(", ", item.Data.SelectMany(d => d.Categories.Select(c => c.Category)).Distinct())
+                                    </td>
+                                    @if (isAdmin)
+                                    {
+                                        <td>
+                                            @switch (item.ApprovalStatus)
+                                            {
+                                                case ApprovalStatus.Pending:
+                                                    <span class="badge bg-warning">En attente</span>
+                                                    break;
+                                                case ApprovalStatus.Approved:
+                                                    <span class="badge bg-success" title="Approuvé le @item.ApprovalDate?.ToString("dd/MM/yyyy HH:mm") par @item.ApprovedByName">Approuvé</span>
+                                                    break;
+                                                case ApprovalStatus.Rejected:
+                                                    <span class="badge bg-danger" title="Rejeté le @item.ApprovalDate?.ToString("dd/MM/yyyy HH:mm") par @item.ApprovedByName. Raison: @item.RejectionReason">Rejeté</span>
+                                                    break;
+                                            }
+                                        </td>
+                                    }
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <button type="button" class="btn btn-primary view-details" data-id="@item.Id">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            
+                                            @if (isAdmin)
+                                            {
+                                                <a asp-action="EditAnalysis" asp-route-id="@item.Id" class="btn btn-secondary">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                
+                                                @if (item.ApprovalStatus == ApprovalStatus.Pending)
+                                                {
+                                                    <button type="button" class="btn btn-success approve-btn" data-id="@item.Id">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-danger reject-btn" data-id="@item.Id">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                }
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Détails de l'analyse</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="detailsContent">
+                <!-- Content will be loaded dynamically -->
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Chargement...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Approve Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="approveModalLabel">Approuver l'analyse</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="approveForm" method="post" asp-action="ApproveAnalysis">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="approveId" name="id" />
+                <div class="modal-body">
+                    <p>Êtes-vous sûr de vouloir approuver cette analyse?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">Approuver</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="rejectModalLabel">Rejeter l'analyse</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="rejectForm" method="post" asp-action="RejectAnalysis">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="rejectId" name="id" />
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="reason">Motif de rejet:</label>
+                        <textarea class="form-control" id="reason" name="reason" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-danger">Rejeter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+                document.getElementById("analysisTypeDropdown").addEventListener("change", function() {
+            var type = this.value;
+            window.location.href = type ? '/Prelivage/AnalysisResults?type=' + type : '/Prelivage/AnalysisResults';
+        });
+        $(document).ready(function() {
+            // Initialize DataTable only if it hasn't been initialized yet
+            if (!$.fn.DataTable.isDataTable('#analysisResultsTable')) {
+                $('#analysisResultsTable').DataTable({
+                    "order": [[0, "desc"]],
+                    "language": {
+                        "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json"
+                    }
+                });
+            }
+
+            // View details button click
+            $('.view-details').click(function() {
+                var id = $(this).data('id');
+                $('#detailsContent').html('<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="sr-only">Chargement...</span></div></div>');
+                $('#detailsModal').modal('show');
+
+                // Fetch analysis details
+                $.ajax({
+                    url: '@Url.Action("GetAnalysisDetails", "Prelivage")/' + id,
+                    type: 'GET',
+                    success: function(response) {
+                        $('#detailsContent').html(response);
+                    },
+                    error: function(xhr, status, error) {
+                        $('#detailsContent').html('<div class="alert alert-danger">Erreur lors du chargement des détails: ' + error + '</div>');
+                        console.error('Error fetching analysis details:', error);
+                    }
+                });
+            });
+
+            // Approve button click
+            $('.approve-btn').click(function() {
+                var id = $(this).data('id');
+                $('#approveId').val(id);
+                $('#approveModal').modal('show');
+            });
+
+            // Reject button click
+            $('.reject-btn').click(function() {
+                var id = $(this).data('id');
+                $('#rejectId').val(id);
+                $('#rejectModal').modal('show');
+            });
+        });
+    </script>
+}

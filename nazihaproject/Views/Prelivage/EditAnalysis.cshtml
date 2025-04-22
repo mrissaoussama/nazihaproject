@@ -1,0 +1,169 @@
+@model NazihaProject.ViewModels.AnalysisResponse
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using NazihaProject.Models
+@functions {
+    private string HumanizeString(string input)
+    {
+        if (string.IsNullOrEmpty(input)) return input;
+        var replaced = input.Replace("_", " ");
+        replaced = System.Text.RegularExpressions.Regex.Replace(replaced, "([a-z])([A-Z])", "$1 $2");
+        var words = replaced.Split(' ');
+        for (int i = 0; i < words.Length; i++)
+        {
+            words[i] = words[i].Length > 1
+                ? char.ToUpper(words[i][0]) + words[i].Substring(1).ToLower()
+                : words[i].ToUpper();
+        }
+        return string.Join(" ", words);
+    }
+}
+@{
+    ViewData["Title"] = "Edit Analysis";
+    var config = ViewBag.AnalysisConfig as NazihaProject.ViewModels.AnalysisConfigViewModel;
+}
+
+<link rel="stylesheet" href="~/css/water_liquor.css" asp-append-version="true" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+<div class="water-liquor-analysis">
+    <h1>Modifier analyse @HumanizeString(Model.AnalysisType.ToString())</h1>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <form method="post" action="@Url.Action("UpdateAnalysis", "Prelivage", new { id = Model.Id })">
+        @Html.AntiForgeryToken()
+        <div class="analysis-controls">
+            <input type="hidden" name="AnalysisType" value="@Model.AnalysisType" />
+            <input type="hidden" name="ReturnUrl" value="@Context.Request.Query["returnUrl"]" />
+
+            <div class="form-group">
+                <label for="shift">Poste:</label>
+                <select id="shift" name="Shift" class="form-control">
+                    @foreach (var shift in new[] { "Morning", "Evening", "Night" })
+                    {
+                        if (Model.Shift == shift)
+                        {
+                            <option value="@shift" selected>@HumanizeString(shift)</option>
+                        }
+                        else
+                        {
+                            <option value="@shift">@HumanizeString(shift)</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="analysisDate">Date:</label>
+                <input type="date" id="analysisDate" name="Date" class="form-control"
+                       value="@Model.AnalysisDate.ToString("yyyy-MM-dd")" />
+            </div>
+
+            <div class="hour-selector">
+                <label for="analysisHour">Heure:</label>
+                @{
+                    var selectedHour = Model.AnalysisData.FirstOrDefault()?.Hour ?? 0;
+                }
+                <select id="analysisHour" name="Hour" class="form-control">
+                    @for (int hour = 0; hour < 24; hour++)
+                    {
+                        if (hour == selectedHour)
+                        {
+                            <option value="@hour" selected>@hour:00</option>
+                        }
+                        else
+                        {
+                            <option value="@hour">@hour:00</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Mettre à jour</button>
+            <a href="@Context.Request.Query["returnUrl"]" class="btn btn-secondary">Annuler</a>
+        </div>
+
+        <div class="analysis-tables">
+            @{
+                var groupedData = Model.AnalysisData.GroupBy(d => d.Category)
+                .ToDictionary(g => g.Key, g => g.First());
+
+                if (config != null)
+                {
+                    int tableIndex = 0;
+                    foreach (var table in config.Tables)
+                    {
+                        <div class="analysis-table-container" data-category="@table.Category">
+                            <h2>@(tableIndex + 1). @table.Title</h2>
+                            <input type="hidden" name="HourlyData[@tableIndex].Hour" value="@selectedHour" />
+                            <input type="hidden" name="HourlyData[@tableIndex].Category" value="@table.Category" />
+
+                            <table class="analysis-table">
+                                <thead>
+                                    <tr>
+                                        <th>Paramètre</th>
+                                        <th>Valeur</th>
+                                        <th>Unité</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var param in table.Parameters)
+                                    {
+                                        var paramValue = "0.00";
+
+                                        if (groupedData.TryGetValue(table.Category, out var categoryData) &&
+                                        categoryData.Parameters.TryGetValue(param.Name, out var parameter))
+                                        {
+                                            paramValue = parameter.Value.ToString("0.00");
+                                        }
+
+                                        <tr>
+                                            <td>@param.Name</td>
+                                            <td>
+                                                <input type="number" step="0.01" class="form-control parameter-input"
+                                                       name="HourlyData[@tableIndex].Parameters[@param.Name].Value"
+                                                       value="@paramValue" required />
+                                                <input type="hidden"
+                                                       name="HourlyData[@tableIndex].Parameters[@param.Name].Unit"
+                                                       value="@param.Unit" />
+                                            </td>
+                                            <td>@param.Unit</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        tableIndex++;
+                    }
+                }
+            }
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Sync hour values
+            $('#analysisHour').change(function() {
+                const selectedHour = $(this).val();
+                $('input[name$="Hour"]').val(selectedHour);
+            });
+
+            setTimeout(() => $('.alert').alert('close'), 5000);
+        });
+    </script>
+}

@@ -1,0 +1,419 @@
+@model NazihaProject.ViewModels.AnalysisStatisticsViewModel
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using NazihaProject.Models
+
+@functions {
+    private string HumanizeString(string input)
+    {
+        if (string.IsNullOrEmpty(input)) return input;
+        var replaced = input.Replace("_", " ");
+        replaced = System.Text.RegularExpressions.Regex.Replace(replaced, "([a-z])([A-Z])", "$1 $2");
+        var words = replaced.Split(' ');
+        for (int i = 0; i < words.Length; i++)
+        {
+            if (words[i].Length > 1)
+                words[i] = char.ToUpper(words[i][0]) + words[i].Substring(1).ToLower();
+            else
+                words[i] = words[i].ToUpper();
+        }
+        return string.Join(" ", words);
+    }
+}
+
+@{
+    ViewData["Title"] = $"Statistiques d'analyse - {HumanizeString(Model.AnalysisType.ToString())}";
+}
+
+<div class="container-fluid px-4 mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="mb-0">Statistiques d'analyse - @HumanizeString(Model.AnalysisType.ToString())</h1>
+        <select id="analysisTypeDropdown" class="form-select" style="max-width: 200px;">
+            @foreach (var analysisType in (List<AnalysisType>)ViewBag.AllAnalysisTypes)
+            {
+                if (Model.AnalysisType == analysisType)
+                {
+                    <option value="@analysisType" selected>
+                        @HumanizeString(analysisType.ToString())
+                    </option>
+                }
+                else
+                {
+                    <option value="@analysisType">
+                        @HumanizeString(analysisType.ToString())
+                    </option>
+                }
+            }
+        </select>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header py-2">
+                    <i class="fas fa-filter me-1"></i> Filtres
+                </div>
+                <div class="card-body py-2">
+                    <form method="get" class="row g-2">
+                        <input type="hidden" name="type" value="@Model.AnalysisType" />
+
+                        <div class="col-md-3">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text">Début</span>
+                                <input type="date" id="startDate" name="startDate" class="form-control"
+                                       value="@Model.StartDate.ToString("yyyy-MM-dd")" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text">Fin</span>
+                                <input type="date" id="endDate" name="endDate" class="form-control"
+                                       value="@Model.EndDate.ToString("yyyy-MM-dd")" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 d-flex align-items-center">
+                            <button type="submit" class="btn btn-sm btn-primary me-2">
+                                <i class="fas fa-search"></i> Filtrer
+                            </button>
+                            <a href="@Url.Action("AnalysisResults", new { type = Model.AnalysisType })" class="btn btn-sm btn-secondary">
+                                <i class="fas fa-table"></i> Voir les résultats
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-4 col-sm-4">
+            <div class="small-box bg-success">
+                <div class="inner">
+                    <h3>@Model.CompletedReportsCount</h3>
+                    <p>Analyses approuvées</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-4">
+            <div class="small-box bg-warning">
+                <div class="inner">
+                    <h3>@Model.RemainingReportsCount</h3>
+                    <p>Analyses en attente</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-4">
+            <div class="small-box bg-danger">
+                <div class="inner">
+                    <h3>@Model.MissedReportsCount</h3>
+                    <p>Analyses manquées</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center py-2">
+            <div>
+                <i class="fas fa-chart-bar me-1"></i> Statistiques par catégorie
+            </div>
+            <div>
+                <button type="button" class="btn btn-sm btn-secondary" id="toggleCompactView">
+                    <i class="fas fa-expand-alt"></i> Vue standard
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (!Model.Categories.Any())
+            {
+                <div class="alert alert-info py-2">
+                    <i class="fas fa-info-circle"></i> Aucune donnée disponible pour cette période.
+                </div>
+            }
+            else
+            {
+                <div id="standardView" style="display:none">
+                    <div class="accordion" id="categoryAccordion">
+                        @foreach (var category in Model.Categories)
+                        {
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="heading-@category.Category">
+                                    <button class="accordion-button py-2" type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#collapse-@category.Category" aria-expanded="true"
+                                            aria-controls="collapse-@category.Category">
+                                        @HumanizeString(category.Category)
+                                    </button>
+                                </h2>
+                                <div id="collapse-@category.Category" class="accordion-collapse collapse show"
+                                     aria-labelledby="heading-@category.Category" data-bs-parent="#categoryAccordion">
+                                    <div class="accordion-body p-2">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-striped table-bordered">
+                                                <thead class="table-primary">
+                                                    <tr>
+                                                        <th>Paramètre</th>
+                                                        <th>Unité</th>
+                                                        <th>Minimum</th>
+                                                        <th>Maximum</th>
+                                                        <th>Moyenne</th>
+                                                        <th>Échantillons</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var param in category.Parameters)
+                                                    {
+                                                        <tr>
+                                                            <td>@param.Name</td>
+                                                            <td>@param.Unit</td>
+                                                            <td>@param.Minimum.ToString("0.00")</td>
+                                                            <td>@param.Maximum.ToString("0.00")</td>
+                                                            <td>@param.Average.ToString("0.00")</td>
+                                                            <td>@param.Count</td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div id="compactView">
+                    <div class="statistics-grid">
+                        @foreach (var category in Model.Categories)
+                        {
+                            <div class="statistics-card">
+                                <h5 class="statistics-card-header">@HumanizeString(category.Category)</h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-bordered mb-0">
+                                                <thead class="table-primary">
+                                                    <tr>
+                                                        <th>Paramètre</th>
+                                                        <th>Min</th>
+                                                        <th>Max</th>
+                                                        <th>Moy</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var param in category.Parameters)
+                                                    {
+                                                        <tr>
+                                                            <td>@param.Name (@param.Unit)</td>
+                                                            <td>@param.Minimum.ToString("0.00")</td>
+                                                            <td>@param.Maximum.ToString("0.00")</td>
+                                                            <td>@param.Average.ToString("0.00")</td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <canvas id="chart-@category.Category" height="150"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .small-box {
+        border-radius: 4px;
+        position: relative;
+        display: block;
+        margin-bottom: 10px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    }
+
+        .small-box > .inner {
+            padding: 10px;
+        }
+
+        .small-box h3 {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0;
+            white-space: nowrap;
+            color: #fff;
+        }
+
+        .small-box p {
+            color: #fff;
+            margin-bottom: 0;
+        }
+
+        .small-box .icon {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            z-index: 0;
+            font-size: 40px;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+    .statistics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(600px, 1fr));
+        grid-gap: 15px;
+    }
+
+    .statistics-card {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 15px;
+    }
+
+    .statistics-card-header {
+        background-color: #f8f9fa;
+        padding: 8px 10px;
+        border-bottom: 1px solid #ddd;
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: bold;
+    }
+
+    .statistics-card-body {
+        padding: 0;
+    }
+
+    .statistics-card table {
+        margin-bottom: 0;
+        font-size: 0.85rem;
+    }
+
+
+</style>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Date range initialization
+            if (!$('#startDate').val()) {
+                const oneMonthAgo = new Date();
+                oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+                $('#startDate').val(oneMonthAgo.toISOString().split('T')[0]);
+            }
+
+            if (!$('#endDate').val()) {
+                const today = new Date().toISOString().split('T')[0];
+                $('#endDate').val(today);
+            }
+
+            // Type dropdown
+            document.getElementById("analysisTypeDropdown").addEventListener("change", function() {
+                var type = this.value;
+                window.location.href = '/Prelivage/AnalysisStatistics?type=' + type;
+            });
+
+            // Toggle compact view
+            $('#toggleCompactView').click(function() {
+                $('#standardView').toggle();
+                $('#compactView').toggle();
+
+                if ($('#compactView').is(':visible')) {
+                    $(this).html('<i class="fas fa-expand-alt"></i> Vue standard');
+                } else {
+                    $(this).html('<i class="fas fa-compress-alt"></i> Vue compacte');
+                }
+            });
+
+            // Initialize all charts
+            initializeCharts();
+
+            function initializeCharts() {
+        @foreach (var category in Model.Categories)
+        {
+            <text>
+                            if (document.getElementById('chart-@category.Category')) {
+                                const ctx = document.getElementById('chart-@category.Category').getContext('2d');
+                                new Chart(ctx, {
+                                    type: 'bar',
+                                    data: {
+                                        labels: [@Html.Raw(string.Join(",", category.Parameters.Select(p => $"'{p.Name}'")))],
+                                        datasets: [
+                                            {
+                                                label: 'Min',
+                                                data: [@string.Join(",", category.Parameters.Select(p => p.Minimum))],
+                                                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                                                borderColor: 'rgba(54, 162, 235, 1)',
+                                                borderWidth: 1
+                                            },
+                                            {
+                                                label: 'Max',
+                                                data: [@string.Join(",", category.Parameters.Select(p => p.Maximum))],
+                                                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                                                borderColor: 'rgba(255, 99, 132, 1)',
+                                                borderWidth: 1
+                                            },
+                                            {
+                                                label: 'Moy',
+                                                data: [@string.Join(",", category.Parameters.Select(p => p.Average))],
+                                                backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                                                borderColor: 'rgba(75, 192, 192, 1)',
+                                                borderWidth: 1
+                                            }
+                                        ]
+                                    },
+                                    options: {
+                                        responsive: true,
+                                        maintainAspectRatio: true,
+                                        plugins: {
+                                            legend: {
+                                                position: 'top',
+                                                labels: {
+                                                    boxWidth: 10,
+                                                    font: {
+                                                        size: 9
+                                                    },
+                                                    padding: 3
+                                                }
+                                            }
+                                        },
+                                        scales: {
+                                            y: {
+                                                beginAtZero: false,
+                                                ticks: {
+                                                    font: {
+                                                        size: 9
+                                                    }
+                                                }
+                                            },
+                                            x: {
+                                                ticks: {
+                                                    font: {
+                                                        size: 9
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+            </text>
+        }
+            }
+        });
+    </script>
+}

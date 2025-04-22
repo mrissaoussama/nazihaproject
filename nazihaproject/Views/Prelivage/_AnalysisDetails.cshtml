@@ -1,0 +1,117 @@
+@model NazihaProject.ViewModels.AnalysisDetailsViewModel
+@using NazihaProject.Models
+@functions {
+    private string HumanizeString(string input)
+    {
+        if (string.IsNullOrEmpty(input)) return input;
+        var replaced = input.Replace("_", " ");
+        replaced = System.Text.RegularExpressions.Regex.Replace(replaced, "([a-z])([A-Z])", "$1 $2");
+        var words = replaced.Split(' ');
+        for (int i = 0; i < words.Length; i++)
+        {
+            if (words[i].Length > 1)
+                words[i] = char.ToUpper(words[i][0]) + words[i].Substring(1).ToLower();
+            else
+                words[i] = words[i].ToUpper();
+        }
+        return string.Join(" ", words);
+    }
+}
+
+<div class="analysis-details">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <h5 class="mb-3">Informations générales</h5>
+            <table class="table table-bordered table-sm">
+                <tr>
+                    <th>Type d'analyse</th>
+                    <td>@HumanizeString(Model.AnalysisType.ToString())</td>
+                </tr>
+                <tr>
+                    <th>Date</th>
+                    <td>@Model.AnalysisDate.ToString("dd/MM/yyyy")</td>
+                </tr>
+                <tr>
+                    <th>Poste</th>
+                    <td>@Model.Shift</td>
+                </tr>
+                <tr>
+                    <th>Heures</th>
+                    <td>@string.Join(", ", Model.Data.Select(d => $"{d.Hour}:00"))</td>
+                </tr>
+            </table>
+        </div>
+        <div class="col-md-6">
+            <h5 class="mb-3">Statut de l'analyse</h5>
+            <table class="table table-bordered table-sm">
+                <tr>
+                    <th>Statut</th>
+                    <td>
+                        @switch (Model.ApprovalStatus)
+                        {
+                            case ApprovalStatus.Pending:
+                                <span class="badge bg-warning">En attente d'approbation</span>
+                                break;
+                            case ApprovalStatus.Approved:
+                                <span class="badge bg-success">Approuvée</span>
+                                break;
+                            case ApprovalStatus.Rejected:
+                                <span class="badge bg-danger">Rejetée</span>
+                                break;
+                        }
+                    </td>
+                </tr>
+                @if (Model.ApprovalStatus != ApprovalStatus.Pending)
+                {
+                    <tr>
+                        <th>Date de @(Model.ApprovalStatus == ApprovalStatus.Approved ? "l'approbation" : "rejet")</th>
+                        <td>@(Model.ApprovalDate?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td>
+                    </tr>
+                    <tr>
+                        <th>Par</th>
+                        <td>@(Model.ApprovedByName ?? "-")</td>
+                    </tr>
+                    @if (Model.ApprovalStatus == ApprovalStatus.Rejected && !string.IsNullOrEmpty(Model.RejectionReason))
+                    {
+                        <tr>
+                            <th>Motif du rejet</th>
+                            <td>@Model.RejectionReason</td>
+                        </tr>
+                    }
+                }
+            </table>
+        </div>
+    </div>
+
+    @foreach (var hourGroup in Model.Data)
+    {
+        <div class="hour-group mb-4">
+            <h5>Heure: @hourGroup.Hour:00</h5>
+            @foreach (var category in hourGroup.Categories)
+            {
+                <div class="category-data mb-3">
+                    <h6>@HumanizeString(category.Category)</h6>
+                    <table class="table table-striped table-bordered">
+                        <thead class="table-primary">
+                            <tr>
+                                <th>Paramètre</th>
+                                <th>Valeur</th>
+                                <th>Unité</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var parameter in category.Parameters)
+                            {
+                                <tr>
+                                    <td>@parameter.Key</td>
+                                    <td>@parameter.Value.Value</td>
+                                    <td>@parameter.Value.Unit</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    }
+</div>

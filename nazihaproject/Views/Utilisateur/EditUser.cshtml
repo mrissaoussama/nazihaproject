@@ -1,0 +1,115 @@
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model NazihaProject.ViewModels.UserViewModel
+@{
+    ViewData["Title"] = "Modifier un utilisateur";
+}
+
+<div class="container-fluid px-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-user-edit me-1"></i>
+                    Modifier l'utilisateur @Model.Username
+                </div>
+                <div class="card-body">
+                    <form asp-action="EditUser" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="Username" class="control-label">Nom d'utilisateur</label>
+                                    <input asp-for="Username" class="form-control" required />
+                                    <span asp-validation-for="Username" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="Password" class="control-label">Nouveau mot de passe</label>
+                                    <input type="password" id="Password" name="Password" class="form-control" 
+                                           placeholder="Laissez vide pour ne pas changer" />
+                                    <small class="text-muted">Laissez vide pour conserver le mot de passe actuel</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="FirstName" class="control-label">Prénom</label>
+                                    <input asp-for="FirstName" class="form-control" required />
+                                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="LastName" class="control-label">Nom</label>
+                                    <input asp-for="LastName" class="form-control" required />
+                                    <span asp-validation-for="LastName" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="Email" class="control-label">Email</label>
+                                    <input asp-for="Email" class="form-control" type="email" />
+                                    <span asp-validation-for="Email" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="Roles" class="control-label">Rôle</label>
+                                    <select asp-for="Roles" class="form-select" required>
+                                        <option value="Administrator">Administrateur</option>
+                                        <option value="TechnicianEau">Technicien Eau</option>
+                                        <option value="TechnicianColoration">Technicien Coloration</option>
+                                        <option value="TechnicianPurete">Technicien Pureté</option>
+                                        <option value="User">Utilisateur standard</option>
+                                    </select>
+                                    <span asp-validation-for="Roles" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <div class="form-check">
+                                <input asp-for="IsActive" class="form-check-input" />
+                                <label asp-for="IsActive" class="form-check-label">Compte actif</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-0"><strong>Date de création:</strong> @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-0"><strong>Dernière connexion:</strong> 
+                                        @(Model.LastLoginAt.HasValue ? Model.LastLoginAt.Value.ToString("dd/MM/yyyy HH:mm") : "Jamais")
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Enregistrer les modifications
+                            </button>
+                            <a asp-action="UserList" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
