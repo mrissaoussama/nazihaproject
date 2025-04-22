@@ -1,6 +1,13 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Mvc.TagHelpers
+@inject SignInManager<IdentityUser> SignInManager
 
+@if (!SignInManager.IsSignedIn(User))
+{
+    <script>
+        window.location.href = '/Account/Login';
+    </script>
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -183,8 +190,7 @@
                     <a href="#" class="dropdown-item dropdown-footer">See All Notifications</a>
                 </div>
             </li>
-                @if (User.IsInRole(RoleType.Responsable.ToString()))
-                {
+
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="statisticsDropdown" role="button" data-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-chart-bar"></i> Statistiques
@@ -198,7 +204,7 @@
                             }
                         </div>
                     </li>
-                }
+            
 
                 @functions {
                     private string HumanizeString(string input)
@@ -252,8 +258,7 @@
                                 <i class="right fas fa-angle-left"></i>
                             </p>
                         </a>
-                        @if (User.IsInRole(RoleType.Responsable.ToString()))
-                        {
+
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
                                     <a asp-controller="Utilisateur" asp-action="UserList" class="nav-link">
@@ -262,7 +267,6 @@
                                     </a>
                                 </li>
                             </ul>
-                        }
                     </li>
                     <li class="nav-item menu-open">
                         <a href="#" class="nav-link">
@@ -281,8 +285,7 @@
                             </li>
                         </ul>
                     </li>
-                @if (User.IsInRole(RoleType.TechnicienPosteEau.ToString()))
-        {
+     
                     <li class="nav-item menu-open">
                         <a href="#" class="nav-link">
                             <i class="nav-icon fas fa-tachometer-alt"></i>
@@ -317,9 +320,8 @@
                                         </a>
                                     </li>
                         </ul>
-                    </li>}
-                @if (User.IsInRole(RoleType.TechnicienPosteColoration.ToString()))
-        {
+                    </li>
+      
                     <li class="nav-item menu-open">
                         <a href="#" class="nav-link">
                             <i class="nav-icon fas fa-tachometer-alt"></i>
@@ -354,9 +356,7 @@
                                 </a>
                             </li>
                         </ul>
-                    </li>}
-                @if (User.IsInRole(RoleType.TechnicienPostePurete.ToString()))
-                    {
+                    </li>
                         <li class="nav-item menu-open">
                             <a href="#" class="nav-link">
                                 <i class="nav-icon fas fa-tachometer-alt"></i>
@@ -386,65 +386,7 @@
                                 </li>
                             </ul>
                         </li>
-                    }
-                        <li class="nav-item menu-open">
-                            <a href="#" class="nav-link">
-                                <i class='bx bxs-store'></i>
-                                <p>
-                                    Stock
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a asp-controller="Stock" asp-action="Stock_Page" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Consulter Stock</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a asp-controller="Stock" asp-action="Perte_stock" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Pertes</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a asp-controller="Stock" asp-action="EntrerStock" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Entrer Stock</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a asp-controller="Stock" asp-action="AffecterStock" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Affecter Stock</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="#" class="nav-link">
-                                        <i class="nav-icon fas fa-boxes"></i>
-                                        <p>
-                                            Etat stock
-                                            <i class="right fas fa-angle-left"></i>
-                                        </p>
-                                    </a>
-                                    <ul class="nav nav-treeview">
-                                        <li class="nav-item">
-                                            <a asp-controller="Stock" asp-action="EtatStock" class="nav-link">
-                                                <i class="far fa-circle nav-icon"></i>
-                                                <p>Etat Stock terrien</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a asp-controller="Stock" asp-action="Etat_Stock_saisie" class="nav-link">
-                                                <i class="far fa-circle nav-icon"></i>
-                                                <p>Etat saisie</p>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
-                            </ul>
-                        </li>
+
                 </ul>
             </nav>
             <!-- /.sidebar-menu -->
