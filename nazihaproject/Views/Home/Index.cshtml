@@ -1,8 +1,215 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Tableau de bord";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="content-header">
+    <div class="container-fluid">
+        <h1 class="m-0">Tableau de bord technicien</h1>
+    </div>
 </div>
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Analysis Type Quick Access -->
+        <h5 class="mt-4 mb-2">Types d'analyses</h5>
+        <div class="row">
+            <div class="col-md-3 col-sm-6 col-12">
+                <div class="info-box bg-gradient-info">
+                    <span class="info-box-icon"><i class="fas fa-flask"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Eau de Retour</span>
+                        <div class="mt-2">
+                            <a asp-controller="Prelivage" asp-action="EauDeRetour_Page" class="btn btn-sm btn-light">
+                                <i class="fas fa-plus-circle"></i> Nouveau
+                            </a>
+                            <a asp-controller="Prelivage" asp-action="AnalysisResults" asp-route-type="EauDeRetour" class="btn btn-sm btn-light">
+                                <i class="fas fa-table"></i> Résultats
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 col-sm-6 col-12">
+                <div class="info-box bg-gradient-success">
+                    <span class="info-box-icon"><i class="fas fa-fire"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Chaudière FME</span>
+                        <div class="mt-2">
+                            <a asp-controller="Prelivage" asp-action="Eauchaudure_Page" class="btn btn-sm btn-light">
+                                <i class="fas fa-plus-circle"></i> Nouveau
+                            </a>
+                            <a asp-controller="Prelivage" asp-action="AnalysisResults" asp-route-type="ChaudiereFME" class="btn btn-sm btn-light">
+                                <i class="fas fa-table"></i> Résultats
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 col-sm-6 col-12">
+                <div class="info-box bg-gradient-warning">
+                    <span class="info-box-icon"><i class="fas fa-vial"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Liqueurs Sucrées</span>
+                        <div class="mt-2">
+                            <a asp-controller="Prelivage" asp-action="Liqueursucree_Page" class="btn btn-sm btn-light">
+                                <i class="fas fa-plus-circle"></i> Nouveau
+                            </a>
+                            <a asp-controller="Prelivage" asp-action="AnalysisResults" asp-route-type="LiquersSucree" class="btn btn-sm btn-light">
+                                <i class="fas fa-table"></i> Résultats
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 col-sm-6 col-12">
+                <div class="info-box bg-gradient-danger">
+                    <span class="info-box-icon"><i class="fas fa-filter"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Refonte</span>
+                        <div class="mt-2">
+                            <a asp-controller="Prelivage" asp-action="Poste_Purete_Sirops_Page" class="btn btn-sm btn-light">
+                                <i class="fas fa-plus-circle"></i> Nouveau
+                            </a>
+                            <a asp-controller="Prelivage" asp-action="AnalysisResults" asp-route-type="Sirops" class="btn btn-sm btn-light">
+                                <i class="fas fa-table"></i> Résultats
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Analyses -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Analyses récentes</h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="recentAnalysesContainer">
+                            <div class="text-center py-3">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="sr-only">Chargement...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a asp-controller="Prelivage" asp-action="AnalysisResults" asp-route-type="EauDeRetour" class="btn btn-sm btn-primary">
+                            Voir toutes les analyses
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Statistiques rapides</h3>
+                </div>
+                <div class="card-body p-0">
+                    <div class="d-flex flex-wrap">
+                        <div class="col-6 p-3 text-center">
+                            <div class="info-box-content">
+                                <span class="info-box-text">Analyses aujourd'hui</span>
+                                <h3 class="info-box-number" id="todayAnalysisCount">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                </h3>
+                            </div>
+                        </div>
+                        <div class="col-6 p-3 text-center">
+                            <div class="info-box-content">
+                                <span class="info-box-text">En attente</span>
+                                <h3 class="info-box-number" id="pendingAnalysisCount">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                </h3>
+                            </div>
+                        </div>
+                        <div class="col-6 p-3 text-center">
+                            <div class="info-box-content">
+                                <span class="info-box-text">Approuvées</span>
+                                <h3 class="info-box-number" id="approvedAnalysisCount">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                </h3>
+                            </div>
+                        </div>
+                        <div class="col-6 p-3 text-center">
+                            <div class="info-box-content">
+                                <span class="info-box-text">Rejetées</span>
+                                <h3 class="info-box-number" id="rejectedAnalysisCount">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                </h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Accès rapide</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-4 mb-2">
+                            <a href="@Url.Action("AnalysisResults", "Prelivage")" class="btn btn-block btn-outline-primary">
+                                <i class="fas fa-table"></i> Tous les résultats
+                            </a>
+                        </div>
+                        <div class="col-4 mb-2">
+                            <a href="@Url.Action("AnalysisResults", "Prelivage", new { status = ApprovalStatus.Pending })" class="btn btn-block btn-outline-warning">
+                                <i class="fas fa-clock"></i> En attente
+                            </a>
+                        </div>
+                        <div class="col-4 mb-2">
+                            <a href="@Url.Action("AnalysisResults", "Prelivage", new { date = DateTime.Today })" class="btn btn-block btn-outline-info">
+                                <i class="fas fa-calendar-day"></i> Aujourd'hui
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Load recent analyses
+            $.ajax({
+                url: '@Url.Action("GetRecentAnalyses", "Home")',
+                type: 'GET',
+                success: function(data) {
+                    $('#recentAnalysesContainer').html(data);
+                },
+                error: function(error) {
+                    $('#recentAnalysesContainer').html('<div class="text-center py-3 text-danger">Erreur de chargement des données</div>');
+                }
+            });
+
+            $.ajax({
+                url: '@Url.Action("GetAnalysisStatistics", "Home")',
+                type: 'GET',
+                success: function(data) {
+                    $('#todayAnalysisCount').html(data.todayCount);
+                    $('#pendingAnalysisCount').html(data.pendingCount);
+                    $('#approvedAnalysisCount').html(data.approvedCount);
+                    $('#rejectedAnalysisCount').html(data.rejectedCount);
+                },
+                error: function() {
+                    $('#todayAnalysisCount, #pendingAnalysisCount, #approvedAnalysisCount, #rejectedAnalysisCount')
+                        .html('<span class="text-danger"><i class="fas fa-exclamation-circle"></i></span>');
+                }
+            });
+        });
+    </script>
+}

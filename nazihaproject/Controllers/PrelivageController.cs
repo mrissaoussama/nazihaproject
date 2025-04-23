@@ -158,8 +158,9 @@ public class PrelivageController : Controller
         }
     }
     [HttpGet]
-    public IActionResult AnalysisResults(AnalysisType type, DateTime? date, int? hour, ApprovalStatus? status = null)
+    public IActionResult AnalysisResults(AnalysisType? type, DateTime? date, int? hour, ApprovalStatus? status = null)
     {
+        // Log the request with nullable type
         _logger.LogInformation("AnalysisResults called with: Type={Type}, Date={Date}, Hour={Hour}, Status={Status}",
             type, date, hour, status);
 
@@ -169,8 +170,10 @@ public class PrelivageController : Controller
                 .Include(r => r.AnalysisData)
                 .Include(r => r.ApprovedBy)
                 .AsQueryable();
-
-            query = query.Where(r => r.AnalysisType == type);
+            if (type.HasValue)
+            {
+                query = query.Where(r => r.AnalysisType == type.Value);
+            }
 
             if (status.HasValue)
             {
@@ -354,7 +357,7 @@ public class PrelivageController : Controller
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "Analyse mise à jour avec succès";
-            return RedirectToLocal(returnUrl);
+            return RedirectToLocal(returnUrl, request.AnalysisType);
         }
         catch (DbUpdateConcurrencyException ex)
         {
@@ -533,13 +536,13 @@ public class PrelivageController : Controller
             return RedirectToAction("PendingAnalyses");
         }
     }
-    private IActionResult RedirectToLocal(string returnUrl)
+    private IActionResult RedirectToLocal(string returnUrl, AnalysisType analysisType)
     {
         if (Url.IsLocalUrl(returnUrl))
         {
             return Redirect(returnUrl);
         }
-        return RedirectToAction("AnalysisResults");
+        return RedirectToAction("AnalysisResults", new { type = analysisType });
     }    
     public IActionResult Index()
     {
@@ -717,7 +720,7 @@ public class PrelivageController : Controller
                 var categoryStats = new CategoryStatistics
                 {
                     Category = category.Key,
-                    Parameters = new List<ParameterStatistics>()
+                    Parameters = []
                 };
 
                 var allParameters = new Dictionary<string, List<(decimal Value, string Unit)>>();
@@ -791,56 +794,150 @@ public class PrelivageController : Controller
         {
             case AnalysisType.ChaudiereFME:
                 config.Title = "Chaudière FME Analysis";
-                config.Tables = new List<AnalysisTableConfig>
-                {
-                    new AnalysisTableConfig
+                config.Tables =
+                [
+                    new()
                     {
                         Title = "Chaudière FME",
                         Category = "ChaudiereFME",
-                        Parameters = new List<ParameterConfig>
-                        {
-                            new ParameterConfig { Name = "TA", Unit = "°C" },
-                            new ParameterConfig { Name = "TAC", Unit = "°F" },
-                            new ParameterConfig { Name = "TH", Unit = "°F" },
-                            new ParameterConfig { Name = "pH", Unit = "-" },
-                            new ParameterConfig { Name = "PO4", Unit = "ppm" },
-                            new ParameterConfig { Name = "Cond", Unit = "µS/cm" }
-                        }
+                        Parameters =
+                        [
+                            new() { Name = "TA", Unit = "°C" },
+                            new() { Name = "TAC", Unit = "°F" },
+                            new() { Name = "TH", Unit = "°F" },
+                            new() { Name = "pH", Unit = "-" },
+                            new() { Name = "PO4", Unit = "ppm" },
+                            new() { Name = "Cond", Unit = "µS/cm" }
+                        ]
                     },
-                    new AnalysisTableConfig
+
+                    new()
                     {
                         Title = "Vapeur Condensée",
                         Category = "VapeurCondensee",
-                        Parameters = new List<ParameterConfig>
-                        {
-                            new ParameterConfig { Name = "pH", Unit = "-" },
-                            new ParameterConfig { Name = "Conductivité", Unit = "µS/cm" }
-                        }
+                        Parameters = [new() { Name = "pH", Unit = "-" }, new() { Name = "Cond", Unit = "µS/cm" }]
                     }
-                };
+                ];
                 break;
 
             case AnalysisType.EauDeRetour:
                 config.Title = "Eau de Retour Analysis";
-                config.Tables = new List<AnalysisTableConfig>
-                {
-                    new AnalysisTableConfig
+                config.Tables =
+                [
+                    new()
                     {
                         Title = "Eau de Retour",
                         Category = "EauRetour",
-                        Parameters = new List<ParameterConfig>
-                        {
-                            new ParameterConfig { Name = "S%", Unit = "%" },
-                            new ParameterConfig { Name = "pH", Unit = "-" },
-                            new ParameterConfig { Name = "Conductivité", Unit = "µS/cm" }
-                        }
+                        Parameters =
+                        [
+                            new() { Name = "S%", Unit = "%" },
+                            new() { Name = "pH", Unit = "-" },
+                            new() { Name = "Conductivité", Unit = "µS/cm" }
+                        ]
                     }
-                };
+                ];
                 break;
 
             case AnalysisType.ColorationRefonte:
                 config.Title = "Coloration Refonte";
-                config.Tables = new List<AnalysisTableConfig>
+                config.Tables =
+                [
+                    new()
+                    {
+                        Title = "Refonte Brute",
+                        Category = "Refonte Brute",
+                        Parameters =
+                        [
+                            new() { Name = "Bx", Unit = "°Bx" },
+                            new() { Name = "col", Unit = "UI" },
+                            new() { Name = "pH", Unit = "-" }
+                        ]
+                    },
+
+                    new()
+                    {
+                        Title = "Refonte Epurée",
+                        Category = "Refonte Epurée",
+                        Parameters =
+                        [
+                            new() { Name = "Bx", Unit = "°Bx" },
+                            new() { Name = "col", Unit = "UI" },
+                            new() { Name = "pH", Unit = "-" }
+                        ]
+                    },
+
+                    new()
+                    {
+                        Title = "Refonte Decoloration",
+                        Category = "Refonte Decoloration",
+                        Parameters =
+                        [
+                            new() { Name = "Bx", Unit = "°Bx" },
+                            new() { Name = "col", Unit = "UI" },
+                            new() { Name = "pH", Unit = "-" }
+                        ]
+                    },
+
+                    new()
+                    {
+                        Title = "Refonte Concentrée",
+                        Category = "Refonte Concentrée",
+                        Parameters =
+                        [
+                            new() { Name = "Bx", Unit = "°Bx" },
+                            new() { Name = "col", Unit = "UI" },
+                            new() { Name = "pH", Unit = "-" }
+                        ]
+                    },
+
+                    new()
+                    {
+                        Title = "Refonte Sirops",
+                        Category = "Refonte Sirops",
+                        Parameters =
+                        [
+                            new() { Name = "Bx", Unit = "°Bx" },
+                            new() { Name = "col", Unit = "UI" },
+                            new() { Name = "pH", Unit = "-" }
+                        ]
+                    }
+                ];
+                break;
+
+            case AnalysisType.ColorationEgouts:
+                config.Title = "Coloration Egouts";
+                config.Tables =
+                [
+                    new()
+                    {
+                        Title = "Sirops+ER1",
+                        Category = "Sirops+ER1",
+                        Parameters =
+                        [
+                            new() { Name = "pH", Unit = "-" },
+                            new() { Name = "Bx", Unit = "°Bx" },
+                            new() { Name = "col", Unit = "UI" }
+                        ]
+                    },
+
+                    new()
+                    {
+                        Title = "E.R1(AT)",
+                        Category = "E.R1(AT)",
+                        Parameters =
+                        [
+                            new() { Name = "pH", Unit = "-" },
+                            new() { Name = "Bx", Unit = "°Bx" },
+                            new() { Name = "col", Unit = "UI" }
+                        ]
+                    }
+
+                ];
+                break;
+
+            case AnalysisType.LiquersSucree:
+                config.Title = "Liqueurs Sucrées Analysis";
+           config.Tables = new List<AnalysisTableConfig>
                 {
                     new AnalysisTableConfig
                     {
@@ -848,377 +945,339 @@ public class PrelivageController : Controller
                         Category = "Refonte Brute",
                         Parameters = new List<ParameterConfig>
                         {
-                            new ParameterConfig { Name = "Bx", Unit = "°Bx" },
-                            new ParameterConfig { Name = "col", Unit = "UI" },
-                            new ParameterConfig { Name = "pH", Unit = "-" }
+                            new ParameterConfig { Name = "Prix", Unit = "€" },
+                            new ParameterConfig { Name = "pH", Unit = "-" },
+                            new ParameterConfig { Name = "TC", Unit = "°C" }
                         }
                     },
                     new AnalysisTableConfig
                     {
-                        Title = "Refonte Epurée",
-                        Category = "Refonte Epurée",
+                        Title = "Four à Chaud",
+                        Category = "Four à Chaud",
                         Parameters = new List<ParameterConfig>
                         {
-                            new ParameterConfig { Name = "Bx", Unit = "°Bx" },
-                            new ParameterConfig { Name = "col", Unit = "UI" },
-                            new ParameterConfig { Name = "pH", Unit = "-" }
+                            new ParameterConfig { Name = "CO2", Unit = "ppm" },
+                            new ParameterConfig { Name = "O2", Unit = "ppm" },
+                            new ParameterConfig { Name = "Alc", Unit = "%" }
                         }
                     },
                     new AnalysisTableConfig
                     {
-                        Title = "Refonte Decoloration",
-                        Category = "Refonte Decoloration",
+                        Title = "Chauffage",
+                        Category = "Chauffage",
                         Parameters = new List<ParameterConfig>
                         {
-                            new ParameterConfig { Name = "Bx", Unit = "°Bx" },
-                            new ParameterConfig { Name = "col", Unit = "UI" },
-                            new ParameterConfig { Name = "pH", Unit = "-" }
+                            new ParameterConfig { Name = "Alc", Unit = "%" }
                         }
                     },
                     new AnalysisTableConfig
                     {
-                        Title = "Refonte Concentrée",
-                        Category = "Refonte Concentrée",
+                        Title = "1ère Corbo",
+                        Category = "1ère Corbo",
                         Parameters = new List<ParameterConfig>
                         {
-                            new ParameterConfig { Name = "Bx", Unit = "°Bx" },
-                            new ParameterConfig { Name = "col", Unit = "UI" },
-                            new ParameterConfig { Name = "pH", Unit = "-" }
+                            new ParameterConfig { Name = "Alc", Unit = "%" },
+                            new ParameterConfig { Name = "pH", Unit = "-" },
+                            new ParameterConfig { Name = "TC", Unit = "°C" }
                         }
                     },
                     new AnalysisTableConfig
                     {
-                        Title = "Refonte Sirops",
-                        Category = "Refonte Sirops",
+                        Title = "2ème Corbo",
+                        Category = "2ème Corbo",
                         Parameters = new List<ParameterConfig>
                         {
-                            new ParameterConfig { Name = "Bx", Unit = "°Bx" },
-                            new ParameterConfig { Name = "col", Unit = "UI" },
-                            new ParameterConfig { Name = "pH", Unit = "-" }
+                            new ParameterConfig { Name = "Alc", Unit = "%" },
+                            new ParameterConfig { Name = "pH", Unit = "-" },
+                            new ParameterConfig { Name = "TC", Unit = "°C" }
+                        }
+                    },
+                    new AnalysisTableConfig
+                    {
+                        Title = "Refonte Brut",
+                        Category = "Refonte Brut",
+                        Parameters = new List<ParameterConfig>
+                        {
+                            new ParameterConfig { Name = "Brix", Unit = "°Bx" },
+                            new ParameterConfig { Name = "pH", Unit = "-" },
+                            new ParameterConfig { Name = "TC", Unit = "°C" }
                         }
                     }
                 };
                 break;
-
-            case AnalysisType.ColorationEgouts:
-                config.Title = "Coloration Egouts";
-                config.Tables = new List<AnalysisTableConfig>
-                {
-                    new AnalysisTableConfig
-                    {
-                        Title = "Sirops+ER1",
-                        Category = "Sirops+ER1",
-                        Parameters = new List<ParameterConfig>
-                        {
-                            new ParameterConfig { Name = "pH", Unit = "-" },
-                            new ParameterConfig { Name = "Bx", Unit = "°Bx" },
-                            new ParameterConfig { Name = "col", Unit = "UI" }
-                        }
-                    },
-                    new AnalysisTableConfig
-                    {
-                        Title = "E.R1(AT)",
-                        Category = "E.R1(AT)",
-                        Parameters = new List<ParameterConfig>
-                        {
-                            new ParameterConfig { Name = "pH", Unit = "-" },
-                            new ParameterConfig { Name = "Bx", Unit = "°Bx" },
-                            new ParameterConfig { Name = "col", Unit = "UI" }
-                        }
-                    },
-                    // Other existing tables with "col" parameter instead of "pr"
-                };
-                break;
-
-            case AnalysisType.LiquersSucree:
-                config.Title = "Liqueurs Sucrées Analysis";
-                config.Tables = new List<AnalysisTableConfig>
-                {
-                    // Existing tables remain the same
-                };
-                break;
-
             case AnalysisType.ColorationJetC:
                 config.Title = "Coloration Jet C Analysis";
-                config.Tables = new List<AnalysisTableConfig>
-                {
-                    new AnalysisTableConfig
+                config.Tables =
+                [
+                    new()
                     {
                         Title = "Masse Cuite",
                         Category = "Masse Cuite",
-                        Parameters = new List<ParameterConfig>
-                        {
-                            new ParameterConfig { Name = "N", Unit = "-" },
-                            new ParameterConfig { Name = "H", Unit = "-" },
-                            new ParameterConfig { Name = "Bx", Unit = "°Bx" },
-                            new ParameterConfig { Name = "pH", Unit = "-" },
-                            new ParameterConfig { Name = "Color", Unit = "UI" },
-                            new ParameterConfig { Name = "RT", Unit = "-" }
-                        }
+                        Parameters =
+                        [
+                            new() { Name = "N", Unit = "-" },
+                            new() { Name = "H", Unit = "-" },
+                            new() { Name = "Bx", Unit = "°Bx" },
+                            new() { Name = "pH", Unit = "-" },
+                            new() { Name = "Color", Unit = "UI" },
+                            new() { Name = "RT", Unit = "-" }
+                        ]
                     },
-                    new AnalysisTableConfig
+
+                    new()
                     {
                         Title = "Egouts Mère",
                         Category = "Egouts Mère",
-                        Parameters = new List<ParameterConfig>
-                        {
-                            new ParameterConfig { Name = "Bx", Unit = "°Bx" },
-                            new ParameterConfig { Name = "Color", Unit = "UI" }
-                        }
+                        Parameters = [new() { Name = "Bx", Unit = "°Bx" }, new() { Name = "Color", Unit = "UI" }]
                     }
-                };
+                ];
                 break;
             case AnalysisType.JetRaffine1:
                 config.Title = "Jet Raffiné 1";
-                config.Tables = new List<AnalysisTableConfig>
-    {
-        new AnalysisTableConfig
-        {
-            Title = "Masse Cuite JR1",
-            Category = "Masse Cuite JR1",
-            Parameters = new List<ParameterConfig>
-            {
-                new ParameterConfig { Name = "N", Unit = "-" },
-                new ParameterConfig { Name = "H", Unit = "-" },
-                new ParameterConfig { Name = "Bx", Unit = "°Bx" },
-                new ParameterConfig { Name = "Pureté", Unit = "%" },
-                new ParameterConfig { Name = "pH", Unit = "-" }
-            }
-        },
-        new AnalysisTableConfig
-        {
-            Title = "Egouts JR1",
-            Category = "Egouts JR1",
-            Parameters = new List<ParameterConfig>
-            {
-                new ParameterConfig { Name = "Bx", Unit = "°Bx" },
-                new ParameterConfig { Name = "Pureté", Unit = "%" }
-            }
-        }
-    };
+                config.Tables =
+                [
+                    new()
+                    {
+                        Title = "Masse Cuite JR1",
+                        Category = "Masse Cuite JR1",
+                        Parameters =
+                        [
+                            new() { Name = "N", Unit = "-" },
+                            new() { Name = "H", Unit = "-" },
+                            new() { Name = "Bx", Unit = "°Bx" },
+                            new() { Name = "Pureté", Unit = "%" },
+                            new() { Name = "pH", Unit = "-" }
+                        ]
+                    },
+
+                    new()
+                    {
+                        Title = "Egouts JR1",
+                        Category = "Egouts JR1",
+                        Parameters = [new() { Name = "Bx", Unit = "°Bx" }, new() { Name = "Pureté", Unit = "%" }]
+                    }
+                ];
                 break;
 
             // Update JetRaffine2 with the correct parameters
             case AnalysisType.JetRaffine2:
                 config.Title = "Jet Raffiné 2";
-                config.Tables = new List<AnalysisTableConfig>
-    {
-        new AnalysisTableConfig
-        {
-            Title = "Masse Cuite JR2",
-            Category = "Masse Cuite JR2",
-            Parameters = new List<ParameterConfig>
-            {
-                new ParameterConfig { Name = "N", Unit = "-" },
-                new ParameterConfig { Name = "H", Unit = "-" },
-                new ParameterConfig { Name = "Bx", Unit = "°Bx" },
-                new ParameterConfig { Name = "Pureté", Unit = "%" },
-                new ParameterConfig { Name = "pH", Unit = "-" }
-            }
-        },
-        new AnalysisTableConfig
-        {
-            Title = "Egouts JR2",
-            Category = "Egouts JR2",
-            Parameters = new List<ParameterConfig>
-            {
-                new ParameterConfig { Name = "Bx", Unit = "°Bx" },
-                new ParameterConfig { Name = "Pureté", Unit = "%" }
-            }
-        }
-    };
+                config.Tables =
+                [
+                    new()
+                    {
+                        Title = "Masse Cuite JR2",
+                        Category = "Masse Cuite JR2",
+                        Parameters =
+                        [
+                            new() { Name = "N", Unit = "-" },
+                            new() { Name = "H", Unit = "-" },
+                            new() { Name = "Bx", Unit = "°Bx" },
+                            new() { Name = "Pureté", Unit = "%" },
+                            new() { Name = "pH", Unit = "-" }
+                        ]
+                    },
+
+                    new()
+                    {
+                        Title = "Egouts JR2",
+                        Category = "Egouts JR2",
+                        Parameters = [new() { Name = "Bx", Unit = "°Bx" }, new() { Name = "Pureté", Unit = "%" }]
+                    }
+                ];
                 break;
             case AnalysisType.Sirops:
                 config.Title = "Sirops Analysis";
-                config.Tables = new List<AnalysisTableConfig>
-                {
-                    new AnalysisTableConfig
+                config.Tables =
+                [
+                    new()
                     {
                         Title = "Sirops",
                         Category = "Sirops",
-                        Parameters = new List<ParameterConfig>
-                        {
-                            new ParameterConfig { Name = "pH", Unit = "-" },
-                            new ParameterConfig { Name = "Brix", Unit = "°Bx" },
-                            new ParameterConfig { Name = "Purete", Unit = "%" }
-                        }
+                        Parameters =
+                        [
+                            new() { Name = "pH", Unit = "-" },
+                            new() { Name = "Brix", Unit = "°Bx" },
+                            new() { Name = "Purete", Unit = "%" }
+                        ]
                     }
-                };
+                ];
                 break;
 
             case AnalysisType.PureteEgouts:
                 config.Title = "Pureté Egouts";
-                config.Tables = new List<AnalysisTableConfig>
-                {
-                    new AnalysisTableConfig
+                config.Tables =
+                [
+                    new()
                     {
                         Title = "Sirops+ER1",
                         Category = "Sirops+ER1",
-                        Parameters = new List<ParameterConfig>
-                        {
-                            new ParameterConfig { Name = "pH", Unit = "-" },
-                            new ParameterConfig { Name = "Bx", Unit = "°Bx" },
-                            new ParameterConfig { Name = "Pureté", Unit = "%" }
-                        }
+                        Parameters =
+                        [
+                            new() { Name = "pH", Unit = "-" },
+                            new() { Name = "Bx", Unit = "°Bx" },
+                            new() { Name = "Pureté", Unit = "%" }
+                        ]
                     },
-                    new AnalysisTableConfig
+
+                    new()
                     {
                         Title = "E.R1(AT)",
                         Category = "E.R1(AT)",
-                        Parameters = new List<ParameterConfig>
-                        {
-                            new ParameterConfig { Name = "pH", Unit = "-" },
-                            new ParameterConfig { Name = "Bx", Unit = "°Bx" },
-                            new ParameterConfig { Name = "Pureté", Unit = "%" }
-                        } },
+                        Parameters =
+                        [
+                            new() { Name = "pH", Unit = "-" },
+                            new() { Name = "Bx", Unit = "°Bx" },
+                            new() { Name = "Pureté", Unit = "%" }
+                        ]
+                    },
 
-                  new AnalysisTableConfig
-        {
-            Title = "E.R1+E.R2",
-            Category = "E.R1+E.R2",
-            Parameters = new List<ParameterConfig>
-            {
-                new ParameterConfig { Name = "pH", Unit = "-" },
-                new ParameterConfig { Name = "Bx", Unit = "°Bx" },
-                new ParameterConfig { Name = "Pureté", Unit = "%" }
-            }
-        },
-        new AnalysisTableConfig
-        {
-            Title = "E.R2",
-            Category = "E.R2",
-            Parameters = new List<ParameterConfig>
-            {
-                new ParameterConfig { Name = "pH", Unit = "-" },
-                new ParameterConfig { Name = "Bx", Unit = "°Bx" },
-                new ParameterConfig { Name = "Pureté", Unit = "%" }
-            }
-        },
-        new AnalysisTableConfig
-        {
-            Title = "E.APP",
-            Category = "E.APP",
-            Parameters = new List<ParameterConfig>
-            {
-                new ParameterConfig { Name = "pH", Unit = "-" },
-                new ParameterConfig { Name = "Bx", Unit = "°Bx" },
-                new ParameterConfig { Name = "Pureté", Unit = "%" }
-            }
-        },
-        new AnalysisTableConfig
-        {
-            Title = "E.A",
-            Category = "E.A",
-            Parameters = new List<ParameterConfig>
-            {
-                new ParameterConfig { Name = "pH", Unit = "-" },
-                new ParameterConfig { Name = "Bx", Unit = "°Bx" },
-                new ParameterConfig { Name = "Pureté", Unit = "%" }
-            }
-        },
-        new AnalysisTableConfig
-        {
-            Title = "E.B",
-            Category = "E.B",
-            Parameters = new List<ParameterConfig>
-            {
-                new ParameterConfig { Name = "pH", Unit = "-" },
-                new ParameterConfig { Name = "Bx", Unit = "°Bx" },
-                new ParameterConfig { Name = "Pureté", Unit = "%" }
-            }
-        }
-    };
+
+                    new()
+                    {
+                        Title = "E.R1+E.R2",
+                        Category = "E.R1+E.R2",
+                        Parameters =
+                        [
+                            new() { Name = "pH", Unit = "-" },
+                            new() { Name = "Bx", Unit = "°Bx" },
+                            new() { Name = "Pureté", Unit = "%" }
+                        ]
+                    },
+
+                    new()
+                    {
+                        Title = "E.R2",
+                        Category = "E.R2",
+                        Parameters =
+                        [
+                            new() { Name = "pH", Unit = "-" },
+                            new() { Name = "Bx", Unit = "°Bx" },
+                            new() { Name = "Pureté", Unit = "%" }
+                        ]
+                    },
+
+                    new()
+                    {
+                        Title = "E.APP",
+                        Category = "E.APP",
+                        Parameters =
+                        [
+                            new() { Name = "pH", Unit = "-" },
+                            new() { Name = "Bx", Unit = "°Bx" },
+                            new() { Name = "Pureté", Unit = "%" }
+                        ]
+                    },
+
+                    new()
+                    {
+                        Title = "E.A",
+                        Category = "E.A",
+                        Parameters =
+                        [
+                            new() { Name = "pH", Unit = "-" },
+                            new() { Name = "Bx", Unit = "°Bx" },
+                            new() { Name = "Pureté", Unit = "%" }
+                        ]
+                    },
+
+                    new()
+                    {
+                        Title = "E.B",
+                        Category = "E.B",
+                        Parameters =
+                        [
+                            new() { Name = "pH", Unit = "-" },
+                            new() { Name = "Bx", Unit = "°Bx" },
+                            new() { Name = "Pureté", Unit = "%" }
+                        ]
+                    }
+                ];
 
     break;
 
             case AnalysisType.PureteJetC:
                 config.Title = "Pureté Jet C";
-                config.Tables = new List<AnalysisTableConfig>
-                {
-                    new AnalysisTableConfig
+                config.Tables =
+                [
+                    new()
                     {
                         Title = "Masse Cuite",
                         Category = "Masse Cuite",
-                        Parameters = new List<ParameterConfig>
-                        {
-                            new ParameterConfig { Name = "N", Unit = "-" },
-                            new ParameterConfig { Name = "H", Unit = "-" },
-                            new ParameterConfig { Name = "Bx", Unit = "°Bx" },
-                            new ParameterConfig { Name = "pH", Unit = "-" },
-                            new ParameterConfig { Name = "Pureté", Unit = "%" },
-                            new ParameterConfig { Name = "RT", Unit = "-" }
-                        }
+                        Parameters =
+                        [
+                            new() { Name = "N", Unit = "-" },
+                            new() { Name = "H", Unit = "-" },
+                            new() { Name = "Bx", Unit = "°Bx" },
+                            new() { Name = "pH", Unit = "-" },
+                            new() { Name = "Pureté", Unit = "%" },
+                            new() { Name = "RT", Unit = "-" }
+                        ]
                     },
-                    new AnalysisTableConfig
+
+                    new()
                     {
                         Title = "Egouts Mère",
                         Category = "Egouts Mère",
-                        Parameters = new List<ParameterConfig>
-                        {
-                            new ParameterConfig { Name = "Bx", Unit = "°Bx" },
-                            new ParameterConfig { Name = "Pureté", Unit = "%" }
-                        }
+                        Parameters = [new() { Name = "Bx", Unit = "°Bx" }, new() { Name = "Pureté", Unit = "%" }]
                     }
-                };
+                ];
                 break;
 
             case AnalysisType.SucreBlancCristalisee:
                 config.Title = "Sucre Blanc Cristalisé";
-                config.Tables = new List<AnalysisTableConfig>
-                {
-                    new AnalysisTableConfig
+                config.Tables =
+                [
+                    new()
                     {
                         Title = "Sucre Blanc",
                         Category = "Sucre Blanc",
-                        Parameters = new List<ParameterConfig>
-                        {
-                            new ParameterConfig { Name = "Humidité", Unit = "%" },
-                            new ParameterConfig { Name = "Couleur", Unit = "UI" },
-                            new ParameterConfig { Name = "Cendres", Unit = "ppm" },
-                            new ParameterConfig { Name = "Granulométrie", Unit = "mm" }
-                        }
+                        Parameters =
+                        [
+                            new() { Name = "Humidité", Unit = "%" },
+                            new() { Name = "Couleur", Unit = "UI" },
+                            new() { Name = "Cendres", Unit = "ppm" },
+                            new() { Name = "Granulométrie", Unit = "mm" }
+                        ]
                     }
-                };
+                ];
                 break;
 
             case AnalysisType.SucreEnSachoge:
                 config.Title = "Sucre en Sachets";
-                config.Tables = new List<AnalysisTableConfig>
-                {
-                    new AnalysisTableConfig
+                config.Tables =
+                [
+                    new()
                     {
                         Title = "Sucre en Sachets",
                         Category = "Sucre en Sachets",
-                        Parameters = new List<ParameterConfig>
-                        {
-                            new ParameterConfig { Name = "Poids", Unit = "g" },
-                            new ParameterConfig { Name = "Humidité", Unit = "%" },
-                            new ParameterConfig { Name = "Qualité emballage", Unit = "-" }
-                        }
+                        Parameters =
+                        [
+                            new() { Name = "Poids", Unit = "g" },
+                            new() { Name = "Humidité", Unit = "%" },
+                            new() { Name = "Qualité emballage", Unit = "-" }
+                        ]
                     }
-                };
+                ];
                 break;
 
  
 
             default:
-                config.Tables = new List<AnalysisTableConfig>
-                {
-                    new AnalysisTableConfig
+                config.Tables =
+                [
+                    new()
                     {
                         Title = "Default Table",
                         Category = "Default",
-                        Parameters = new List<ParameterConfig>
-                        {
-                            new ParameterConfig { Name = "pH", Unit = "-" },
-                            new ParameterConfig { Name = "Temperature", Unit = "°C" }
-                        }
+                        Parameters = [new() { Name = "pH", Unit = "-" }, new() { Name = "Temperature", Unit = "°C" }]
                     }
-                };
+                ];
                 break;
         }
 
         return config;
     }
 }
+
 

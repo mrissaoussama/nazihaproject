@@ -51,7 +51,57 @@ public class HomeController : Controller
     {
         return View();
     }
+    [HttpGet]
+    public async Task<IActionResult> GetAnalysisStatistics()
+    {
+        var today = DateTime.Today;
+        var tomorrow = today.AddDays(1);
+    
+        var result = new
+        {
+            todayCount = await _context.AnalysisRecords
+                .CountAsync(r => r.AnalysisDate >= today && r.AnalysisDate < tomorrow),
+            
+            pendingCount = await _context.AnalysisRecords
+                .CountAsync(r => r.ApprovalStatus == ApprovalStatus.Pending),
+            
+            approvedCount = await _context.AnalysisRecords
+                .CountAsync(r => r.ApprovalStatus == ApprovalStatus.Approved),
+            
+            rejectedCount = await _context.AnalysisRecords
+                .CountAsync(r => r.ApprovalStatus == ApprovalStatus.Rejected)
+        };
+    
+        return Json(result);
+    }
+    [HttpGet]
+    public async Task<IActionResult> GetRecentAnalyses()
+    {
+        try
+        {
+            var recentAnalyses = await _context.AnalysisRecords
+                .Include(r => r.AnalysisData)
+                .OrderByDescending(r => r.AnalysisDate)
+                .Take(5)
+                .ToListAsync();
 
+            var viewModel = recentAnalyses.Select(r => new AnalysisResultViewModel
+            {
+                Id = r.Id,
+                AnalysisType = r.AnalysisType,
+                AnalysisDate = r.AnalysisDate,
+                Shift = r.Shift,
+                ApprovalStatus = r.ApprovalStatus
+            }).ToList();
+
+            return PartialView("_RecentAnalyses", viewModel);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving recent analyses");
+            return Content("<div class=\"text-center py-3 text-danger\">Erreur de chargement des données</div>");
+        }
+    }
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {

@@ -1,56 +1,68 @@
 ﻿@model NazihaProject.ViewModels.DashboardViewModel
 @{
-    ViewData["Title"] = "Tableau de bord";
+    ViewData["Title"] = "Tableau de bord administrateur";
 }
 
-<div class="container-fluid">
-    <h1 class="mt-4 mb-4">Tableau de bord administrateur</h1>
-
-    <div class="row">
-        <div class="col-lg-4">
-            <div class="small-box bg-warning">
-                <div class="inner">
-                    <h3>@Model.PendingAnalysesCount</h3>
-                    <p>Analyses en attente d'approbation</p>
-                </div>
-                <div class="icon">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <a asp-controller="Prelivage" asp-action="PendingAnalyses" class="small-box-footer">
-                    Gérer <i class="fas fa-arrow-circle-right"></i>
-                </a>
-            </div>
-        </div>
-
-        <div class="col-lg-4">
-            <div class="small-box bg-success">
-                <div class="inner">
-                    <h3>@Model.ApprovedAnalysesCount</h3>
-                    <p>Analyses approuvées</p>
-                </div>
-                <div class="icon">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-
-            </div>
-        </div>
-
-        <div class="col-lg-4">
-            <div class="small-box bg-danger">
-                <div class="inner">
-                    <h3>@Model.RejectedAnalysesCount</h3>
-                    <p>Analyses rejetées</p>
-                </div>
-                <div class="icon">
-                    <i class="fas fa-times-circle"></i>
-                </div>
-
-            </div>
-        </div>
+<div class="content-header">
+    <div class="container-fluid">
+        <h1 class="m-0">Tableau de bord administrateur</h1>
     </div>
+</div>
 
-    @if (Model.AnalysesByType.Any())
-    {
+<section class="content">
+    <div class="container-fluid">
+        <!-- Summary Statistics Cards -->
+        <div class="row">
+            <div class="col-lg-4 col-md-6">
+                <div class="info-box bg-warning">
+                    <span class="info-box-icon"><i class="fas fa-clock"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Analyses en attente d'approbation</span>
+                        <span class="info-box-number">@Model.PendingAnalysesCount</span>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: 100%"></div>
+                        </div>
+                        <a href="@Url.Action("PendingAnalyses", "Prelivage")" class="small-box-footer">
+                            Gérer <i class="fas fa-arrow-circle-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="info-box bg-success">
+                    <span class="info-box-icon"><i class="fas fa-check"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Analyses approuvées</span>
+                        <span class="info-box-number">@Model.ApprovedAnalysesCount</span>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: 100%"></div>
+                        </div>
+                        <a href="@Url.Action("AnalysisResults", "Prelivage", new { status = ApprovalStatus.Approved })" class="small-box-footer">
+                            Voir toutes <i class="fas fa-arrow-circle-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="info-box bg-danger">
+                    <span class="info-box-icon"><i class="fas fa-times"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Analyses rejetées</span>
+                        <span class="info-box-number">@Model.RejectedAnalysesCount</span>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: 100%"></div>
+                        </div>
+                        <a href="@Url.Action("AnalysisResults", "Prelivage", new { status = ApprovalStatus.Rejected })" class="small-box-footer">
+                            Voir toutes <i class="fas fa-arrow-circle-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Analyses by Type -->
         <div class="row">
             <div class="col-12">
                 <div class="card">
@@ -58,35 +70,108 @@
                         <h3 class="card-title">Analyses en attente par type</h3>
                     </div>
                     <div class="card-body">
-                        <table class="table table-bordered table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Type d'analyse</th>
-                                    <th>Nombre en attente</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                        @if (!Model.AnalysesByType.Any())
+                        {
+                            <p class="text-muted">Aucune analyse en attente</p>
+                        }
+                        else
+                        {
+                            <div class="row">
                                 @foreach (var item in Model.AnalysesByType)
                                 {
-                                    <tr>
-                                        <td>@item.Key</td>
-                                        <td>@item.Value</td>
-                                        <td>
-                                            <a asp-controller="Prelivage" asp-action="AnalysisResults"
-                                               asp-route-type="@item.Key"
-                                               asp-route-status="@ApprovalStatus.Pending"
-                                               class="btn btn-sm btn-primary">
-                                                Voir
-                                            </a>
-                                        </td>
-                                    </tr>
+                                    <div class="col-md-4 col-sm-6">
+                                        <div class="progress-group mb-4">
+                                            <span class="progress-text">@item.Key</span>
+                                            <span class="float-right"><b>@item.Value</b></span>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-primary" style="width: 100%"></div>
+                                            </div>
+                                            <div class="mt-2">
+                                                <a href="@Url.Action("AnalysisResults", "Prelivage", new { type = item.Key, status = ApprovalStatus.Pending })" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i> Voir
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
                                 }
-                            </tbody>
-                        </table>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
         </div>
-    }
-</div>
+
+        <!-- Quick Actions -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Actions rapides</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 col-sm-6">
+                                <a href="@Url.Action("PendingAnalyses", "Prelivage")" class="btn btn-block btn-primary">
+                                    <i class="fas fa-tasks"></i> Toutes les analyses en attente
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <a href="@Url.Action("AnalysisResults", "Prelivage")" class="btn btn-block btn-info">
+                                    <i class="fas fa-table"></i> Tous les résultats
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <a href="@Url.Action("AnalysisResults", "Prelivage", new { date = DateTime.Today })" class="btn btn-block btn-success">
+                                    <i class="fas fa-calendar-day"></i> Analyses aujourd'hui
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <a href="@Url.Action("AnalysisStatistics", "Prelivage", new { type = AnalysisType.EauDeRetour })" class="btn btn-block btn-warning">
+                                    <i class="fas fa-chart-bar"></i> Statistiques
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Analyses -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Analyses récentes</h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="recentAnalysesContainer">
+                            <div class="text-center py-3">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="sr-only">Chargement...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Load recent analyses
+            $.ajax({
+                url: '@Url.Action("GetRecentAnalyses", "Home")',
+                type: 'GET',
+                success: function(data) {
+                    $('#recentAnalysesContainer').html(data);
+                },
+                error: function() {
+                    $('#recentAnalysesContainer').html('<div class="text-center py-3 text-danger">Erreur de chargement des données</div>');
+                }
+            });
+        });
+    </script>
+}
