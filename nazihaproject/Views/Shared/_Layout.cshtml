@@ -1,13 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Mvc.TagHelpers
-@inject SignInManager<IdentityUser> SignInManager
 
-@if (!SignInManager.IsSignedIn(User))
-{
-    <script>
-        window.location.href = '/Account/Login';
-    </script>
-}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -224,7 +217,7 @@
                     }
                 }
                 <li class="nav-item">
-                    <form id="logoutForm" action="@Url.Action("Logout", "Account")" method="post" style="display:none;">
+                    <form id="logoutForm" asp-controller="Account" asp-action="Logout" method="post" style="display:none;">
                         @Html.AntiForgeryToken()
                     </form>
                     <a class="nav-link" href="javascript:document.getElementById('logoutForm').submit();" role="button">

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using NazihaProject.Data;
 using NazihaProject.ViewModels;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace NazihaProject.Controllers
 {
@@ -17,13 +18,22 @@ namespace NazihaProject.Controllers
         }
         
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult Login(string? returnUrl = null)
         {
+            // If user is already logged in, redirect to home page
+            if (User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+            
             var model = new LoginViewModel { ReturnUrl = returnUrl };
             return View(model);
         }
         
         [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (!ModelState.IsValid)
@@ -40,7 +50,8 @@ namespace NazihaProject.Controllers
             // Build claims for the user
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user.Username)
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()) // Add user ID claim
             };
             foreach (var role in user.Roles)
             {
@@ -52,16 +63,27 @@ namespace NazihaProject.Controllers
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(claimsIdentity));
             
+            // Update last login timestamp
+            user.LastLoginAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            
             if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
                 return Redirect(model.ReturnUrl);
             return RedirectToAction("Index", "Home");
         }
 
-        [HttpGet]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Login", "Account");
+        }
+        
+        [AllowAnonymous]
+        public IActionResult AccessDenied()
+        {
+            return View();
         }
     }
 }
