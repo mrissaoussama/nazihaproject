@@ -30,6 +30,14 @@ public class PrelivageController : Controller
 
         try
         {
+            // Check if any parameter value is zero
+            if (HasZeroValues(request))
+            {
+                _logger.LogWarning("Analysis submission rejected due to zero values");
+                TempData["ErrorMessage"] = "Les valeurs égales à zéro ne sont pas autorisées. Veuillez entrer des valeurs supérieures à zéro pour tous les paramètres.";
+                return RedirectToAction(GetActionNameForAnalysisType(request.AnalysisType));
+            }
+
             if (!DateTime.TryParse(request.Date, out var analysisDate))
             {
                 _logger.LogError("Invalid date format: {Date}", request.Date);
@@ -93,6 +101,30 @@ public class PrelivageController : Controller
             return RedirectToAction(GetActionNameForAnalysisType(request.AnalysisType));
         }
     }
+
+    // Helper method to check if any parameter is zero
+    private bool HasZeroValues(AnalysisRequest request)
+    {
+        if (request.HourlyData == null)
+            return false;
+
+        foreach (var hourlyData in request.HourlyData)
+        {
+            if (hourlyData.Parameters != null)
+            {
+                foreach (var param in hourlyData.Parameters)
+                {
+                    if (param.Value.Value == 0)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        
+        return false;
+    }
+
     private string GetActionNameForAnalysisType(AnalysisType type)
     {
         return type switch
@@ -113,6 +145,7 @@ public class PrelivageController : Controller
             _ => "Index"
         };
     }
+
     [HttpGet]
     public async Task<IActionResult> GetAnalysisDetails(int id)
     {
@@ -160,7 +193,6 @@ public class PrelivageController : Controller
     [HttpGet]
     public IActionResult AnalysisResults(AnalysisType? type, DateTime? date, int? hour, ApprovalStatus? status = null)
     {
-        // Log the request with nullable type
         _logger.LogInformation("AnalysisResults called with: Type={Type}, Date={Date}, Hour={Hour}, Status={Status}",
             type, date, hour, status);
 
@@ -272,6 +304,7 @@ public class PrelivageController : Controller
 
         return View(viewModel);
     }
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Roles = "Responsable")]
@@ -280,6 +313,14 @@ public class PrelivageController : Controller
         try
         {
             _logger.LogInformation("UpdateAnalysis called for ID: {Id}, Type: {Type}", id, request.AnalysisType);
+
+            // Check if any parameter value is zero
+            if (HasZeroValues(request))
+            {
+                _logger.LogWarning("Analysis update rejected due to zero values");
+                TempData["ErrorMessage"] = "Les valeurs égales à zéro ne sont pas autorisées. Veuillez entrer des valeurs supérieures à zéro pour tous les paramètres.";
+                return RedirectToAction("EditAnalysis", new { id = id });
+            }
 
             var record = await _context.AnalysisRecords
                 .Include(r => r.AnalysisData)
@@ -302,7 +343,6 @@ public class PrelivageController : Controller
             _logger.LogInformation("Original record type: {OriginalType}, New type: {NewType}",
                 record.AnalysisType, request.AnalysisType);
 
-            // Check for duplicate entries excluding this entry's ID
             foreach (var hourlyData in request.HourlyData)
             {
                 var exists = await _context.AnalysisRecords
@@ -321,25 +361,20 @@ public class PrelivageController : Controller
                 }
             }
 
-            // Preserve the original type to avoid type changes
-            // request.AnalysisType should match record.AnalysisType
             if (request.AnalysisType != record.AnalysisType)
             {
                 _logger.LogWarning("Type mismatch detected! Original: {OriginalType}, Request: {RequestType}. Using original type.",
                     record.AnalysisType, request.AnalysisType);
-                // Preserve the original type
                 request.AnalysisType = record.AnalysisType;
             }
 
             record.AnalysisDate = analysisDate;
             record.Shift = request.Shift;
-            // Reset approval status since the record has been edited
             record.ApprovalStatus = ApprovalStatus.Pending;
             record.ApprovalDate = null;
             record.ApprovedById = null;
             record.RejectionReason = null;
 
-            // Clear and re-add the analysis data
             _context.AnalysisData.RemoveRange(record.AnalysisData);
             record.AnalysisData.Clear();
 
@@ -387,7 +422,6 @@ public class PrelivageController : Controller
             record.ApprovalStatus = ApprovalStatus.Approved;
             record.ApprovalDate = DateTime.Now;
 
-            // Get current user's ID
             if (int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out int userId))
             {
                 record.ApprovedById = userId;
@@ -420,7 +454,6 @@ public class PrelivageController : Controller
             record.ApprovalDate = DateTime.Now;
             record.RejectionReason = reason;
 
-            // Get current user's ID
             if (int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out int userId))
             {
                 record.ApprovedById = userId;

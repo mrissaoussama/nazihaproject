@@ -70,6 +70,11 @@
         font-size: 3rem;
         margin-bottom: 1rem;
     }
+
+    .zero-value-error {
+        border-color: #dc3545;
+        background-color: #fff8f8;
+    }
 </style>
 
 <div class="water-liquor-analysis">
@@ -232,6 +237,24 @@
                     return false;
                 }
                 
+                // Check for zero values
+                let hasZeroValues = false;
+                $form.find('.parameter-input').each(function() {
+                    const value = parseFloat($(this).val());
+                    if (value === 0) {
+                        hasZeroValues = true;
+                        $(this).addClass('zero-value-error');
+                    } else {
+                        $(this).removeClass('zero-value-error');
+                    }
+                });
+                
+                if (hasZeroValues) {
+                    e.preventDefault();
+                    $('#validation-summary').html('<div class="alert alert-danger">Les valeurs égales à zéro ne sont pas autorisées. Veuillez entrer des valeurs supérieures à zéro pour tous les paramètres.</div>');
+                    return false;
+                }
+                
                 const categories = [];
                 let hasDuplicates = false;
                 
@@ -259,6 +282,16 @@
                     $('#loadingOverlay').fadeOut();
                 }, 10000);
                 
+            });
+            
+            // Highlight zero values on input change
+            $('.parameter-input').on('input', function() {
+                const value = parseFloat($(this).val());
+                if (value === 0) {
+                    $(this).addClass('zero-value-error');
+                } else {
+                    $(this).removeClass('zero-value-error');
+                }
             });
             
             setTimeout(function() {

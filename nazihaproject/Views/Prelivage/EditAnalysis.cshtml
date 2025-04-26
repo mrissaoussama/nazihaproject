@@ -25,6 +25,13 @@
 <link rel="stylesheet" href="~/css/water_liquor.css" asp-append-version="true" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 
+<style>
+    .zero-value-error {
+        border-color: #dc3545;
+        background-color: #fff8f8;
+    }
+</style>
+
 <div class="water-liquor-analysis">
     <h1>Modifier analyse @HumanizeString(Model.AnalysisType.ToString())</h1>
 
@@ -43,7 +50,9 @@
         </div>
     }
 
-    <form method="post" action="@Url.Action("UpdateAnalysis", "Prelivage", new { id = Model.Id })">
+    <div id="validation-summary" class="text-danger"></div>
+
+    <form method="post" action="@Url.Action("UpdateAnalysis", "Prelivage", new { id = Model.Id })" id="editAnalysisForm">
         @Html.AntiForgeryToken()
         <div class="analysis-controls">
             <input type="hidden" name="AnalysisType" value="@Model.AnalysisType" />
@@ -92,7 +101,7 @@
                 </select>
             </div>
 
-            <button type="submit" class="btn btn-primary">Mettre à jour</button>
+            <button type="submit" class="btn btn-primary" id="updateButton">Mettre à jour</button>
             <a href="@Context.Request.Query["returnUrl"]" class="btn btn-secondary">Annuler</a>
         </div>
 
@@ -164,6 +173,49 @@
             });
 
             setTimeout(() => $('.alert').alert('close'), 5000);
+            
+            // Highlight zero values on page load
+            $('.parameter-input').each(function() {
+                const value = parseFloat($(this).val());
+                if (value === 0) {
+                    $(this).addClass('zero-value-error');
+                }
+            });
+            
+            // Highlight zero values on input change
+            $('.parameter-input').on('input', function() {
+                const value = parseFloat($(this).val());
+                if (value === 0) {
+                    $(this).addClass('zero-value-error');
+                } else {
+                    $(this).removeClass('zero-value-error');
+                }
+            });
+            
+            // Form submission validation
+            $('#editAnalysisForm').on('submit', function(e) {
+                // Check for zero values
+                let hasZeroValues = false;
+                $(this).find('.parameter-input').each(function() {
+                    const value = parseFloat($(this).val());
+                    if (value === 0) {
+                        hasZeroValues = true;
+                        $(this).addClass('zero-value-error');
+                    }
+                });
+                
+                if (hasZeroValues) {
+                    e.preventDefault();
+                    $('#validation-summary').html('<div class="alert alert-danger alert-dismissible fade show" role="alert">' +
+                        '<i class="fas fa-exclamation-circle"></i> Les valeurs égales à zéro ne sont pas autorisées. Veuillez entrer des valeurs supérieures à zéro pour tous les paramètres.' +
+                        '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
+                        '</div>');
+                    $('html, body').animate({ scrollTop: 0 }, 'fast');
+                    return false;
+                }
+                
+                $('#validation-summary').html('');
+            });
         });
     </script>
 }
