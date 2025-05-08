@@ -4,9 +4,12 @@ using nazihaproject.Models;
 using System.Linq;
 using System.Threading.Tasks;
 using NazihaProject.Data;
+using Microsoft.AspNetCore.Authorization;
+using NazihaProject.Models;
 
 namespace nazihaproject.Controllers
 {
+    [Authorize] 
     public class NoteController : Controller
     {
         private readonly AppDbContext _context;
@@ -16,20 +19,18 @@ namespace nazihaproject.Controllers
             _context = context;
         }
 
-        // GET: Note/Index - View all notes
+        [Authorize(Roles = nameof(RoleType.Responsable))]
         public async Task<IActionResult> Index()
         {
             var notes = await _context.Notes.ToListAsync();
             return View(notes);
         }
 
-        // GET: Note/Create - Show create form
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Note/Create - Add new note
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name,LastName,Description")] Note note)
@@ -38,7 +39,11 @@ namespace nazihaproject.Controllers
             {
                 _context.Add(note);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                
+                if (User.IsInRole(nameof(RoleType.Responsable)))
+                    return RedirectToAction(nameof(Index));
+                else
+                    return RedirectToAction("Index", "Home");
             }
             return View(note);
         }

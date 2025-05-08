@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace NazihaProject.Controllers;
 
+[Authorize(Roles = nameof(RoleType.Responsable))]
 public class UtilisateurController : Controller
 {
     private readonly AppDbContext _context;
