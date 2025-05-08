@@ -278,7 +278,30 @@
                             </li>
                         </ul>
                     </li>
-     
+                        <li class="nav-item menu-open">
+                            <a href="#" class="nav-link">
+                                <i class='bx bxs-store'></i>
+                                <p>
+                                    Note 
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a asp-controller="Note" asp-action="Create" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>ajouter Note</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Note" asp-action="Index" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>consulter note </p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        
                     <li class="nav-item menu-open">
                         <a href="#" class="nav-link">
                             <i class="nav-icon fas fa-tachometer-alt"></i>

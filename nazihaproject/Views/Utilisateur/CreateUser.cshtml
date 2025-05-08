@@ -42,6 +42,13 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
+                                    <label asp-for="Matricule" class="control-label">Matricule</label>
+                                    <input asp-for="Matricule" class="form-control" required />
+                                    <span asp-validation-for="Matricule" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
                                     <label asp-for="LastName" class="control-label">Nom</label>
                                     <input asp-for="LastName" class="form-control" required />
                                     <span asp-validation-for="LastName" class="text-danger"></span>
@@ -61,7 +68,7 @@
                                 <div class="form-group">
                                     <label asp-for="Roles" class="control-label">Rôle</label>
                                     <select asp-for="Roles" class="form-select" required>
-                                        <option value="Responsable">Responsable</option>
+                                        <option value="Responsable" selected>Responsable</option>
                                         <option value="TechnicienPosteEau">Technicien Poste Eau</option>
                                         <option value="TechnicienPosteColoration">Technicien Poste Coloration</option>
                                         <option value="TechnicienPostePurete">Technicien Poste Pureté</option>
