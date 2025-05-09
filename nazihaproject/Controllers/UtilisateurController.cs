@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace NazihaProject.Controllers;
 
+[Authorize(Roles = nameof(RoleType.Responsable))]
 public class UtilisateurController : Controller
 {
     private readonly AppDbContext _context;
@@ -18,12 +19,12 @@ public class UtilisateurController : Controller
     {
         return View();
     }
-    public IActionResult Register()
+    public IActionResult CreateUser()
     {
         return View();
     }
     [HttpPost]
-    public async Task<IActionResult> Register(UserViewModel model)
+    public async Task<IActionResult> CreateUser(UserViewModel model)
     {
         if (!ModelState.IsValid)
         {
@@ -41,7 +42,7 @@ public class UtilisateurController : Controller
      
 
         var utilisateur = new User
-        {
+        {   Username=model.Username,
             FirstName = model.FirstName,
             LastName = model.LastName,
             Matricule = model.Matricule,
@@ -54,11 +55,11 @@ public class UtilisateurController : Controller
         _context.Users.Add(utilisateur);
         await _context.SaveChangesAsync();
 
-        return RedirectToAction("List_Utilisateur"); // Redirect to login page after successful registration
+        return RedirectToAction("UserList"); // Redirect to login page after successful registration
     }
 
         
-    [Authorize(Roles = "Responsable")]
+   
     public async Task<IActionResult> UserList()
     {
         var users = await _context.Users
@@ -81,7 +82,7 @@ public class UtilisateurController : Controller
 
 
 
-    public async Task<IActionResult> Edit_Utilisateur(int id)
+    public async Task<IActionResult> EditUser(int id)
     {
         var utilisateur = await _context.Users.FindAsync(id);
         if (utilisateur == null)
@@ -92,11 +93,13 @@ public class UtilisateurController : Controller
         var model = new UserViewModel
         {
             Id = utilisateur.Id,
+            Username=utilisateur.Username,
             FirstName = utilisateur.FirstName,
             LastName = utilisateur.LastName,
             Matricule = utilisateur.Matricule,
             Email = utilisateur.Email,
-
+            Roles=utilisateur.Roles.ToArray(),
+            
         };
         utilisateur.Roles.AddRange(model.Roles);
 
@@ -106,7 +109,7 @@ public class UtilisateurController : Controller
 
     // POST: Update User
     [HttpPost]
-    public async Task<IActionResult> Edit_Utilisateur(UserViewModel model)
+    public async Task<IActionResult> EditUser(UserViewModel model)
     {
         if (!ModelState.IsValid)
         {
@@ -125,6 +128,7 @@ public class UtilisateurController : Controller
         }
 
         // Mise à jour des champs
+        utilisateur.Username = model.Username;
         utilisateur.FirstName = model.FirstName;
         utilisateur.LastName = model.LastName;
         utilisateur.Matricule = model.Matricule;
@@ -143,7 +147,7 @@ public class UtilisateurController : Controller
             return View(model);
         }
 
-        return RedirectToAction("List_Utilisateur");
+        return RedirectToAction("UserList");
     }
     [HttpPost]
     public async Task<IActionResult> Delete(int id)
@@ -159,7 +163,7 @@ public class UtilisateurController : Controller
 
         await _context.SaveChangesAsync();
 
-        return RedirectToAction("List_Utilisateur");
+        return RedirectToAction("UserList");
     }
     public IActionResult Login()
     {
