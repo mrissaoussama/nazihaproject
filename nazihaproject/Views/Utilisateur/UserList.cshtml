@@ -31,7 +31,7 @@
                                 <th>Nom d'utilisateur</th>
                                 <th>Nom complet</th>
                                 <th>Email</th>
-                                <th>Rôle</th>
+                                @* <th>Rôle</th> *@
                                 <th>Statut</th>
                                 <th>Dernière connexion</th>
                                 <th>Actions</th>
@@ -44,7 +44,7 @@
                                     <td>@user.Username</td>
                                     <td>@user.FirstName @user.LastName</td>
                                     <td>@user.Email</td>
-                                    <td>@user.Roles</td>
+                                    @* <td>@user.Roles</td> *@
                                     <td>
                                         @if (user.IsActive)
                                         {
@@ -91,7 +91,7 @@
                 <p class="text-danger">Cette action est irréversible.</p>
             </div>
             <div class="modal-footer">
-                <form asp-action="DeleteUser" method="post" id="deleteForm">
+                <form asp-action="Delete" method="post" id="deleteForm">
                     <input type="hidden" id="userId" name="id" value="" />
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                     <button type="submit" class="btn btn-danger">Supprimer</button>
